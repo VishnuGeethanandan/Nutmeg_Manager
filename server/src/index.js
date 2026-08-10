@@ -1,10 +1,13 @@
 const dotenv = require('dotenv');
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const connectDB = require('./config/db');
 const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
+const playerRoutes = require('./routes/playerRoutes');
+const configRoutes = require('./routes/configRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -22,12 +25,17 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// --- Static file serving (uploaded photos) ---
+app.use('/uploads', express.static(path.join(__dirname, '..', 'uploads')));
+
 // --- Routes ---
 app.get('/api/health', (_req, res) => {
   res.json({ success: true, message: 'Nutmeg Manager API is running' });
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/players', playerRoutes);
+app.use('/api/config', configRoutes);
 
 // --- Global Error Handler (must be after routes) ---
 app.use(errorHandler);

@@ -13,7 +13,13 @@ const errorHandler = (err, _req, res, _next) => {
   if (err.code === 11000) {
     statusCode = 409;
     const field = Object.keys(err.keyValue)[0];
-    message = `An account with this ${field} already exists`;
+    const fieldLabels = {
+      email: 'email',
+      admissionNumber: 'admission number',
+      userId: 'user account',
+    };
+    const label = fieldLabels[field] || field;
+    message = `A record with this ${label} already exists.`;
   }
 
   // Mongoose cast error (invalid ObjectId)
@@ -31,6 +37,23 @@ const errorHandler = (err, _req, res, _next) => {
   if (err.name === 'TokenExpiredError') {
     statusCode = 401;
     message = 'Authentication token has expired';
+  }
+
+  // Multer errors (file upload)
+  if (err.name === 'MulterError') {
+    statusCode = 400;
+    if (err.code === 'LIMIT_FILE_SIZE') {
+      message = 'File is too large. Maximum allowed size is 2MB.';
+    } else if (err.code === 'LIMIT_UNEXPECTED_FILE') {
+      message = 'Unexpected file field.';
+    } else {
+      message = `File upload error: ${err.message}`;
+    }
+  }
+
+  // Multer file filter error (thrown as generic Error)
+  if (err.message && err.message.includes('Only JPEG, PNG, and WebP images are allowed')) {
+    statusCode = 400;
   }
 
   res.status(statusCode).json({

@@ -5,6 +5,8 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AdminDashboard from './pages/AdminDashboard';
 import PlayerDashboard from './pages/PlayerDashboard';
+import PlayerProfileForm from './pages/PlayerProfileForm';
+import PlayerProfileView from './pages/PlayerProfileView';
 import SpectatorDashboard from './pages/SpectatorDashboard';
 
 function RootRedirect() {
@@ -56,6 +58,30 @@ function App() {
             element={
               <ProtectedRoute roles={['player']}>
                 <PlayerDashboard />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/player/profile/create"
+            element={
+              <ProtectedRoute roles={['player']}>
+                <PlayerProfileForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/player/profile/edit"
+            element={
+              <ProtectedRoute roles={['player']}>
+                <PlayerProfileForm />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/player/profile"
+            element={
+              <ProtectedRoute roles={['player']}>
+                <PlayerProfileView />
               </ProtectedRoute>
             }
           />

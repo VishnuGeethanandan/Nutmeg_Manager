@@ -288,13 +288,13 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 ---
 
 ### Module 2 — Player Profile
-* **Status:** NOT STARTED
-* **Backend:** Not started (Player creation, Profile GET/PUT, Unique admission check, Dept lock check)
-* **Frontend:** Not started (Player registration form, Profile view, Edit profile)
-* **Integration:** Not started
-* **Testing:** Not started
+* **Status:** COMPLETED
+* **Backend:** Completed (`Player.js` schema, unique indexes on admissionNumber and userId, multer photo upload middleware, `playerController.js` and routes for create/view/edit profile, sync name to `users` collection)
+* **Frontend:** Completed (`PlayerProfileForm.jsx` for create/edit, `PlayerProfileView.jsx`, `PlayerDashboard.jsx` CTA card, `AuthContext.jsx` integration for player profiles, glassmorphism design in `index.css`)
+* **Integration:** Completed (Frontend form submissions properly mapped to backend endpoints with multipart/form-data support, profile auto-fetching on player login)
+* **Testing:** Completed (Automated end-to-end API test suite `testPlayerProfile.js` validating authorization, duplicate prevention, locked fields enforcement, and photo upload limits)
 * **Dependencies:** Module 1 (Auth)
-* **Remaining Work:** Full module implementation & verification
+* **Remaining Work:** None
 
 ---
 
@@ -425,21 +425,22 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] Vertical slice module-by-module roadmap finalized
 - [x] Single source of truth file (`PROJECT_MEMORY.md`) initialized
 - [x] **Module 1 Completed:** Authentication & User Management (Database + Backend API + JWT HttpOnly Cookies + Role Middleware + Seed Script + React Auth Context + Login/Register UI + Role Dashboards + E2E Auth Test Suite)
+- [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** Ready to begin **Module 2 — Player Profile**
-* **Current Status:** Module 1 (Authentication & User Management) Completed & Verified. Ready to implement Module 2.
-* **Next Action:** Create `Player` Mongoose schema, implement Player Profile backend endpoints (Profile creation, GET/PUT profile, unique admission number check, locked department validation), build frontend Player Profile form and view components.
+* **Module Name:** Ready to begin **Module 3 — Team & Captain Management**
+* **Current Status:** Module 2 (Player Profile) Completed & Verified. Ready to implement Module 3.
+* **Next Action:** Create `Team` and `CaptainRequest` Mongoose schemas, implement backend endpoints for team creation and captain request workflow (Admin review), build frontend UI for team overview and captain approvals.
 
 ---
 
 ## 10. Pending Work
 
 - [x] **Module 1:** Authentication & User Management (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 2:** Player Profile (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 2:** Player Profile (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
@@ -462,9 +463,11 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 ## 12. Testing Status
 
 * **Unit Tests:** Password hash & validation logic tested
-* **API End-to-End Tests:** Automated `testAuth.js` passing 13 assertions (Register, Login, Session `/me`, Cookie clear, Public Admin registration block)
+* **API End-to-End Tests:** 
+  - Automated `testAuth.js` passing 13 assertions (Register, Login, Session `/me`, Cookie clear, Public Admin registration block)
+  - Automated `testPlayerProfile.js` passing 44 assertions (Authorization, Config, Profile CRUD, Duplicate Keys, Protected Fields, Data Security)
 * **UI Integration Tests:** Manual verification of AuthContext, glassmorphism form state, tab switching, and protected role-based routing
-* **User Acceptance Verification:** Module 1 fully functional and verified end-to-end.
+* **User Acceptance Verification:** Modules 1 and 2 fully functional and verified end-to-end.
 
 ---
 
