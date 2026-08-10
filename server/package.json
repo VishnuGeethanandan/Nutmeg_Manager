@@ -1,0 +1,23 @@
+{
+  "name": "nutmeg-manager-server",
+  "version": "1.0.0",
+  "description": "Backend server for Nutmeg Manager - MCA Football Tournament Management System",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "seed:admin": "node src/scripts/seedAdmin.js"
+  },
+  "keywords": ["nutmeg", "tournament", "football", "mca"],
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "express-validator": "^7.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.7.0"
+  }
+}
