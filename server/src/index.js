@@ -8,6 +8,9 @@ const errorHandler = require('./middleware/errorHandler');
 const authRoutes = require('./routes/authRoutes');
 const playerRoutes = require('./routes/playerRoutes');
 const configRoutes = require('./routes/configRoutes');
+const tournamentRoutes = require('./routes/tournamentRoutes');
+const captainRequestRoutes = require('./routes/captainRequestRoutes');
+const teamRoutes = require('./routes/teamRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -36,6 +39,9 @@ app.get('/api/health', (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/players', playerRoutes);
 app.use('/api/config', configRoutes);
+app.use('/api/tournaments', tournamentRoutes);
+app.use('/api/captain-requests', captainRequestRoutes);
+app.use('/api/teams', teamRoutes);
 
 // --- Global Error Handler (must be after routes) ---
 app.use(errorHandler);

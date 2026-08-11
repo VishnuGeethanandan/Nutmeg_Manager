@@ -456,14 +456,15 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] Single source of truth file (`PROJECT_MEMORY.md`) initialized
 - [x] **Module 1 Completed:** Authentication & User Management (Database + Backend API + JWT HttpOnly Cookies + Role Middleware + Seed Script + React Auth Context + Login/Register UI + Role Dashboards + E2E Auth Test Suite)
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
+- [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** Ready to begin **Module 3 — Team & Captain Management**
-* **Current Status:** Module 2 (Player Profile) Completed & Verified. Ready to implement Module 3.
-* **Next Action:** Create `Team` and `CaptainRequest` Mongoose schemas, implement backend endpoints for team creation and captain request workflow (Admin review), build frontend UI for team overview and captain approvals.
+* **Module Name:** Ready to begin **Module 4 — Player Selection**
+* **Current Status:** Module 3 (Team & Captain Management) Completed & Verified. Ready to implement Module 4.
+* **Next Action:** Build UI/APIs for approved captains to browse unassigned players, send selection requests, and allow players to accept/reject these requests.
 
 ---
 
@@ -471,7 +472,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 
 - [x] **Module 1:** Authentication & User Management (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 2:** Player Profile (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
