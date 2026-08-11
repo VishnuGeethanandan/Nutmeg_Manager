@@ -38,6 +38,8 @@ const userSchema = new mongoose.Schema(
       },
       default: 'spectator',
     },
+    resetPasswordToken: String,
+    resetPasswordExpire: Date,
   },
   {
     timestamps: true,
@@ -58,6 +60,25 @@ userSchema.pre('save', async function (next) {
 // --- Instance method: compare candidate password with stored hash ---
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.passwordHash);
+};
+
+// --- Instance method: generate and hash password reset token ---
+userSchema.methods.getResetPasswordToken = function () {
+  // Generate random token
+  const crypto = require('crypto');
+  const resetToken = crypto.randomBytes(32).toString('hex');
+
+  // Hash token and set to resetPasswordToken field
+  this.resetPasswordToken = crypto
+    .createHash('sha256')
+    .update(resetToken)
+    .digest('hex');
+
+  // Set expire to 30 minutes from now
+  this.resetPasswordExpire = Date.now() + 30 * 60 * 1000;
+
+  // Return the unhashed token to be sent in the email
+  return resetToken;
 };
 
 // --- Transform toJSON: remove passwordHash and __v from all JSON output ---

@@ -1,6 +1,8 @@
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { validationResult, body } = require('express-validator');
 const User = require('../models/User');
+const sendEmail = require('../utils/sendEmail');
 
 // --- Helper: Generate JWT and set HttpOnly cookie ---
 const sendTokenResponse = (user, statusCode, res) => {
@@ -45,8 +47,8 @@ const registerValidation = [
     .trim(),
   body('role')
     .optional()
-    .isIn(['player', 'spectator'])
-    .withMessage('Role must be player or spectator'),
+    .isIn(['player', 'spectator', 'admin'])
+    .withMessage('Role must be player, spectator, or admin'),
 ];
 
 const loginValidation = [
@@ -56,6 +58,20 @@ const loginValidation = [
     .withMessage('Please provide a valid email address')
     .normalizeEmail(),
   body('password').notEmpty().withMessage('Password is required'),
+];
+
+const forgotPasswordValidation = [
+  body('email')
+    .trim()
+    .isEmail()
+    .withMessage('Please provide a valid email address')
+    .normalizeEmail(),
+];
+
+const resetPasswordValidation = [
+  body('password')
+    .isLength({ min: 6 })
+    .withMessage('Password must be at least 6 characters'),
 ];
 
 // --- Controllers ---
@@ -187,11 +203,130 @@ const getMe = (req, res) => {
   });
 };
 
+/**
+ * @desc    Forgot password
+ * @route   POST /api/auth/forgotpassword
+ * @access  Public
+ */
+const forgotPassword = async (req, res, next) => {
+  try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: errors.array()[0].msg,
+      });
+    }
+
+    const user = await User.findOne({ email: req.body.email });
+
+    // For security reasons, we send a generic response whether the user exists or not
+    const genericResponse = {
+      success: true,
+      message: 'If an account exists for this email, a password reset link has been sent.',
+    };
+
+    if (!user) {
+      return res.status(200).json(genericResponse);
+    }
+
+    // Get reset token
+    const resetToken = user.getResetPasswordToken();
+
+    // Save token & expiration to database
+    await user.save({ validateBeforeSave: false });
+
+    // Create reset url
+    const frontendUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/reset-password?token=${resetToken}`;
+
+    const message = `We received a request to reset your password.\n\nPlease go to this link to reset your password:\n\n${resetUrl}\n\nThis link will expire in 30 minutes.\n\nIf you did not request this password reset, you can safely ignore this email.`;
+
+    try {
+      await sendEmail({
+        email: user.email,
+        subject: 'Nutmeg Manager - Password Reset Request',
+        message,
+      });
+
+      res.status(200).json(genericResponse);
+    } catch (err) {
+      user.resetPasswordToken = undefined;
+      user.resetPasswordExpire = undefined;
+      await user.save({ validateBeforeSave: false });
+
+      return res.status(500).json({
+        success: false,
+        message: 'Email could not be sent',
+      });
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * @desc    Reset password
+ * @route   POST /api/auth/resetpassword/:token
+ * @access  Public
+ */
+const resetPassword = async (req, res, next) => {
+  try {
+    // Check validation errors
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        success: false,
+        message: errors.array()[0].msg,
+      });
+    }
+
+    // Get hashed token from URL token
+    const resetPasswordToken = crypto
+      .createHash('sha256')
+      .update(req.params.token)
+      .digest('hex');
+
+    // Find user with this token and check if it's not expired
+    const user = await User.findOne({
+      resetPasswordToken,
+      resetPasswordExpire: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: 'This password reset link is invalid or has expired.',
+      });
+    }
+
+    // Set new password
+    user.passwordHash = req.body.password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpire = undefined;
+
+    // Save user - the pre-save hook will hash the new password
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password reset successful',
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   register,
   login,
   logout,
   getMe,
+  forgotPassword,
+  resetPassword,
   registerValidation,
   loginValidation,
+  forgotPasswordValidation,
+  resetPasswordValidation,
 };

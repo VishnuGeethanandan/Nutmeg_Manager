@@ -278,10 +278,31 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 
 ### Module 1 — Authentication & User Management
 * **Status:** COMPLETED
-* **Backend:** Completed (`User` model, `authController.js` with register/login/me/logout, JWT stored in HttpOnly cookies, password hashing with bcryptjs, role authorization middleware, seed admin script)
-* **Frontend:** Completed (`AuthContext.jsx`, `api.js` with credentials, `RegisterPage.jsx` with Player/Spectator tabs, `LoginPage.jsx`, `ProtectedRoute.jsx`, role dashboards: `AdminDashboard`, `PlayerDashboard`, `SpectatorDashboard`)
+* **Original functionality:**
+  - Registration
+  - Login
+  - Logout
+  - Authentication
+  - Role authorization
+  - Protected routes
+* **Enhancement added:**
+  - Forgot Password
+  - Password Reset
+  - Secure reset token
+  - Token expiration
+  - Single-use reset token
+  - Password reset email
+* **Backend:** Completed (`User` model, `authController.js` with register/login/me/logout/forgotPassword/resetPassword, JWT stored in HttpOnly cookies, password hashing with bcryptjs, role authorization middleware, seed admin script)
+* **Frontend:** Completed (`AuthContext.jsx`, `api.js` with credentials, `RegisterPage.jsx` with Player/Spectator tabs, `LoginPage.jsx`, `ForgotPasswordPage.jsx`, `ResetPasswordPage.jsx`, `ProtectedRoute.jsx`, role dashboards: `AdminDashboard`, `PlayerDashboard`, `SpectatorDashboard`)
 * **Integration:** Completed (HttpOnly cookie authentication, session persistence, automatic auth check on mount, role-based client redirect)
-* **Testing:** Completed (Automated end-to-end API test suite `testAuth.js` verifying 13 test assertions across registration, login, session validation, role protection, and logout)
+* **Testing:** Completed (Automated end-to-end API test suite `testAuth.js`, `testPasswordReset.js` verifying 15 password recovery assertions, and module regression)
+* **Decisions & Implementation Details:**
+  - **Reset token storage strategy:** `crypto` generated random hex token, hashed with `sha256` before storing in DB.
+  - **Token expiration duration:** 30 minutes.
+  - **Email service approach:** `nodemailer` utility (`sendEmail.js`). Defaults to Ethereal mock SMTP during development to prevent spam. Ethereal does NOT send real emails to your inbox; instead, it generates a "Preview URL" that is logged to the backend terminal (e.g., `Preview URL: https://ethereal.email/...`). Clicking this link allows developers to view the mock email. This can be seamlessly switched to a real SMTP (e.g., Gmail) by setting `EMAIL_HOST` in `.env`.
+  - **Authentication-session handling:** System uses stateless JWTs in HttpOnly cookies. After password reset, user must manually login with new password. Old sessions are not automatically invalidated since there is no token blacklist.
+  - **Rate-limiting approach:** Skipped adding an explicit rate limiter for now to avoid complexity; can be added at a global proxy level later.
+  - **New Environment Variables:** `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD`, `EMAIL_FROM`.
 * **Dependencies:** None
 * **Remaining Work:** None
 
