@@ -282,9 +282,16 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
   - Registration
   - Login
   - Logout
-  - Authentication
+  - Authentication (Player, Spectator, Admin)
   - Role authorization
   - Protected routes
+* **Admin functionality:**
+  - Admin role (via `User` schema enum)
+  - Secure initial admin creation (`npm run seed:admin`)
+  - Admin login (uses unified login API)
+  - Admin authorization (via `authorize('admin')` backend middleware)
+  - Admin dashboard (`/admin/dashboard` frontend route)
+  - Admin route protection (`<ProtectedRoute roles={['admin']}>`)
 * **Enhancement added:**
   - Forgot Password
   - Password Reset
@@ -299,10 +306,12 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 * **Decisions & Implementation Details:**
   - **Reset token storage strategy:** `crypto` generated random hex token, hashed with `sha256` before storing in DB.
   - **Token expiration duration:** 30 minutes.
+  - **Admin Creation:** Initial admin is securely created using the backend script `npm run seed:admin`. This script reads credentials from `ADMIN_NAME`, `ADMIN_EMAIL`, and `ADMIN_PASSWORD` defined in `.env`. It gracefully exits if an admin already exists to prevent accidental overwrites. No public registration route for admins exists.
+  - **Admin Authorization:** Backend endpoints are protected using the `authorize(...roles)` middleware, which returns `403 Forbidden` for unauthorized roles like players/spectators, and `401` for unauthenticated requests.
   - **Email service approach:** `nodemailer` utility (`sendEmail.js`). Defaults to Ethereal mock SMTP during development to prevent spam. Ethereal does NOT send real emails to your inbox; instead, it generates a "Preview URL" that is logged to the backend terminal (e.g., `Preview URL: https://ethereal.email/...`). Clicking this link allows developers to view the mock email. This can be seamlessly switched to a real SMTP (e.g., Gmail) by setting `EMAIL_HOST` in `.env`.
   - **Authentication-session handling:** System uses stateless JWTs in HttpOnly cookies. After password reset, user must manually login with new password. Old sessions are not automatically invalidated since there is no token blacklist.
   - **Rate-limiting approach:** Skipped adding an explicit rate limiter for now to avoid complexity; can be added at a global proxy level later.
-  - **New Environment Variables:** `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD`, `EMAIL_FROM`.
+  - **New Environment Variables:** `EMAIL_HOST`, `EMAIL_PORT`, `EMAIL_USER`, `EMAIL_PASSWORD`, `EMAIL_FROM`, `ADMIN_NAME`, `ADMIN_EMAIL`, `ADMIN_PASSWORD`.
 * **Dependencies:** None
 * **Remaining Work:** None
 
