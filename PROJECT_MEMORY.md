@@ -457,14 +457,15 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 1 Completed:** Authentication & User Management (Database + Backend API + JWT HttpOnly Cookies + Role Middleware + Seed Script + React Auth Context + Login/Register UI + Role Dashboards + E2E Auth Test Suite)
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
 - [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI)
+- [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** Ready to begin **Module 4 — Player Selection**
-* **Current Status:** Module 3 (Team & Captain Management) Completed & Verified. Ready to implement Module 4.
-* **Next Action:** Build UI/APIs for approved captains to browse unassigned players, send selection requests, and allow players to accept/reject these requests.
+* **Module Name:** Ready to begin **Module 5 — Tournament Management**
+* **Current Status:** Module 4 (Player Selection) Completed & Verified. Ready to implement Module 5.
+* **Next Action:** Build Admin UI and API for Tournament CRUD operations and transition states (upcoming, ongoing, completed).
 
 ---
 
@@ -473,7 +474,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 1:** Authentication & User Management (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 2:** Player Profile (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
@@ -497,8 +498,9 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 * **API End-to-End Tests:** 
   - Automated `testAuth.js` passing 13 assertions (Register, Login, Session `/me`, Cookie clear, Public Admin registration block)
   - Automated `testPlayerProfile.js` passing 44 assertions (Authorization, Config, Profile CRUD, Duplicate Keys, Protected Fields, Data Security)
+  - Automated `testSquadSelection.js` passing 14 assertions (Direct Selection, Dept Verification, Size Limits, Captain Privileges)
 * **UI Integration Tests:** Manual verification of AuthContext, glassmorphism form state, tab switching, and protected role-based routing
-* **User Acceptance Verification:** Modules 1 and 2 fully functional and verified end-to-end.
+* **User Acceptance Verification:** Modules 1, 2, 3, and 4 fully functional and verified end-to-end.
 
 ---
 

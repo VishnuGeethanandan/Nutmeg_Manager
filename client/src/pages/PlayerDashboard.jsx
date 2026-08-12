@@ -228,6 +228,15 @@ function PlayerDashboard() {
                         <span className={`status-badge ${req.status}`}>
                           {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
                         </span>
+                        {req.status === 'approved' && (
+                          <button 
+                            className="btn btn-primary" 
+                            style={{ padding: '0.25rem 0.5rem', width: 'auto', fontSize: '0.875rem', marginLeft: 'var(--spacing-md)' }}
+                            onClick={() => navigate('/player/squad')}
+                          >
+                            Manage Squad
+                          </button>
+                        )}
                       </div>
                     </div>
                   ))}

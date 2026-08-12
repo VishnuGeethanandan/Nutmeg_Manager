@@ -9,6 +9,7 @@ import AdminDashboard from './pages/AdminDashboard';
 import PlayerDashboard from './pages/PlayerDashboard';
 import PlayerProfileForm from './pages/PlayerProfileForm';
 import PlayerProfileView from './pages/PlayerProfileView';
+import SquadManager from './pages/SquadManager';
 import SpectatorDashboard from './pages/SpectatorDashboard';
 
 function RootRedirect() {
@@ -69,7 +70,7 @@ function App() {
             path="/player/profile/create"
             element={
               <ProtectedRoute roles={['player']}>
-                <PlayerProfileForm />
+                <PlayerProfileForm isEdit={false} />
               </ProtectedRoute>
             }
           />
@@ -77,7 +78,15 @@ function App() {
             path="/player/profile/edit"
             element={
               <ProtectedRoute roles={['player']}>
-                <PlayerProfileForm />
+                <PlayerProfileForm isEdit={true} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/player/squad"
+            element={
+              <ProtectedRoute roles={['player']}>
+                <SquadManager />
               </ProtectedRoute>
             }
           />

@@ -108,6 +108,45 @@ const approveCaptainRequest = async (req, res, next) => {
       return res.status(400).json({ success: false, message: `Request is already ${request.status}.` });
     }
 
+    const Player = require('../models/Player');
+    const Team = require('../models/Team');
+    const TeamMembership = require('../models/TeamMembership');
+
+    const player = await Player.findById(request.playerId);
+    if (!player) {
+      return res.status(404).json({ success: false, message: 'Player not found.' });
+    }
+
+    // Auto-create or find team for this tournament and department
+    let team = await Team.findOne({ tournamentId: request.tournamentId, name: player.departmentName });
+    
+    if (!team) {
+       team = await Team.create({
+          name: player.departmentName,
+          tournamentId: request.tournamentId,
+          captainId: player._id
+       });
+    } else {
+       if (team.captainId) {
+          return res.status(400).json({ success: false, message: 'This department already has a captain for this tournament.' });
+       }
+       team.captainId = player._id;
+       await team.save();
+    }
+    
+    player.isCaptain = true;
+    await player.save();
+    
+    // Add captain to TeamMembership if not already
+    const existingMembership = await TeamMembership.findOne({ tournamentId: request.tournamentId, playerId: player._id });
+    if (!existingMembership) {
+        await TeamMembership.create({
+            playerId: player._id,
+            teamId: team._id,
+            tournamentId: request.tournamentId
+        });
+    }
+
     request.status = 'approved';
     request.reviewedBy = req.user._id;
     request.reviewedAt = Date.now();
@@ -117,6 +156,7 @@ const approveCaptainRequest = async (req, res, next) => {
       success: true,
       message: 'Captain request approved successfully.',
       captainRequest: request,
+      team
     });
   } catch (error) {
     next(error);
