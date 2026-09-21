@@ -1,6 +1,9 @@
 const { validationResult, body } = require('express-validator');
 const Player = require('../models/Player');
 const User = require('../models/User');
+const Team = require('../models/Team');
+const TeamMembership = require('../models/TeamMembership');
+const Tournament = require('../models/Tournament');
 const { DEPARTMENTS, POSITIONS } = require('../config/departments');
 const fs = require('fs');
 const path = require('path');
@@ -285,10 +288,70 @@ const updateMyProfile = async (req, res, next) => {
   }
 };
 
+/**
+ * @desc    Player joins a team (select from dropdown)
+ * @route   POST /api/players/join-team
+ * @access  Private (player only)
+ */
+const joinTeam = async (req, res, next) => {
+  try {
+    const { teamId } = req.body;
+    if (!teamId) {
+      return res.status(400).json({ success: false, message: 'Team ID is required.' });
+    }
+
+    const player = await Player.findOne({ userId: req.user._id });
+    if (!player) {
+      return res.status(404).json({ success: false, message: 'Player profile not found.' });
+    }
+
+    const team = await Team.findById(teamId);
+    if (!team) {
+      return res.status(404).json({ success: false, message: 'Team not found.' });
+    }
+
+    // Verify it's for an active tournament
+    const tournament = await Tournament.findById(team.tournamentId);
+    if (!tournament || tournament.status === 'completed') {
+      return res.status(400).json({ success: false, message: 'Tournament is completed or invalid.' });
+    }
+
+    // Check if player already in a team for this tournament
+    const existingMembership = await TeamMembership.findOne({
+      playerId: player._id,
+      tournamentId: team.tournamentId,
+    });
+
+    if (existingMembership) {
+      return res.status(400).json({ success: false, message: 'You are already on a team for this tournament.' });
+    }
+
+    // Assign player to team
+    await TeamMembership.create({
+      playerId: player._id,
+      teamId: team._id,
+      tournamentId: team.tournamentId,
+    });
+
+    // Update active denormalized state
+    player.teamId = team._id;
+    await player.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Successfully joined team.',
+      player,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   createProfile,
   getMyProfile,
   updateMyProfile,
+  joinTeam,
   createProfileValidation,
   updateProfileValidation,
 };

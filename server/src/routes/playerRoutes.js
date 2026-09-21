@@ -6,6 +6,7 @@ const {
   createProfile,
   getMyProfile,
   updateMyProfile,
+  joinTeam,
   createProfileValidation,
   updateProfileValidation,
 } = require('../controllers/playerController');
@@ -31,5 +32,8 @@ router.put(
   updateProfileValidation,
   updateMyProfile
 );
+
+// POST /api/players/join-team — Player selects a team
+router.post('/join-team', joinTeam);
 
 module.exports = router;

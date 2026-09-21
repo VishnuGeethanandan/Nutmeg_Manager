@@ -9,8 +9,12 @@ function PlayerDashboard() {
   const [requests, setRequests] = useState([]);
   const [tournaments, setTournaments] = useState([]);
   const [selectedTournament, setSelectedTournament] = useState('');
+  const [teams, setTeams] = useState([]);
+  const [selectedTeam, setSelectedTeam] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isJoiningTeam, setIsJoiningTeam] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [teamErrorMsg, setTeamErrorMsg] = useState('');
 
   useEffect(() => {
     if (hasProfile) {
@@ -18,6 +22,14 @@ function PlayerDashboard() {
       fetchTournaments();
     }
   }, [hasProfile]);
+
+  useEffect(() => {
+    if (selectedTournament) {
+      fetchTeams(selectedTournament);
+    } else {
+      setTeams([]);
+    }
+  }, [selectedTournament]);
 
   const fetchRequests = async () => {
     try {
@@ -40,6 +52,15 @@ function PlayerDashboard() {
     }
   };
 
+  const fetchTeams = async (tId) => {
+    try {
+      const res = await api.get(`/teams?tournamentId=${tId}`);
+      setTeams(res.data.teams || []);
+    } catch (err) {
+      console.error('Failed to fetch teams', err);
+    }
+  };
+
   const handleRequestCaptain = async () => {
     if (!selectedTournament) return;
     setErrorMsg('');
@@ -51,6 +72,20 @@ function PlayerDashboard() {
       setErrorMsg(err.response?.data?.message || 'Failed to submit request');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleJoinTeam = async () => {
+    if (!selectedTeam) return;
+    setTeamErrorMsg('');
+    setIsJoiningTeam(true);
+    try {
+      await api.post('/players/join-team', { teamId: selectedTeam });
+      window.location.reload(); // Quick way to refresh profile context
+    } catch (err) {
+      setTeamErrorMsg(err.response?.data?.message || 'Failed to join team');
+    } finally {
+      setIsJoiningTeam(false);
     }
   };
 
@@ -147,8 +182,8 @@ function PlayerDashboard() {
               </div>
               <div className="info-item">
                 <div className="info-item-label">Team Status</div>
-                <div className="info-item-value" style={{ color: 'var(--color-text-muted)' }}>
-                  Not assigned
+                <div className="info-item-value" style={{ color: playerProfile.teamId ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                  {playerProfile.teamId ? 'Assigned' : 'Not assigned'}
                 </div>
               </div>
             </div>
@@ -168,6 +203,50 @@ function PlayerDashboard() {
                 ✏️ Edit Profile
               </button>
             </div>
+          </div>
+        )}
+
+        {/* ── Join Team Section ── */}
+        {hasProfile && !playerProfile.teamId && (
+          <div className="welcome-card" style={{ animation: 'fadeSlideUp 0.6s ease-out', marginTop: 'var(--spacing-xl)' }}>
+            <div className="welcome-card-header">
+              <div className="welcome-greeting">
+                <h2>Join a Team</h2>
+                <p>Select a team for the upcoming tournament</p>
+              </div>
+            </div>
+
+            {teamErrorMsg && (
+              <div className="form-alert error" style={{ marginBottom: 'var(--spacing-md)' }}>
+                {teamErrorMsg}
+              </div>
+            )}
+
+            {teams.length > 0 ? (
+              <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
+                <select 
+                  className="form-input" 
+                  style={{ width: 'auto' }}
+                  value={selectedTeam}
+                  onChange={(e) => setSelectedTeam(e.target.value)}
+                >
+                  <option value="" disabled>Select a team...</option>
+                  {teams.map(team => (
+                    <option key={team._id} value={team._id}>{team.name}</option>
+                  ))}
+                </select>
+                <button 
+                  className="btn btn-primary" 
+                  style={{ width: 'auto' }}
+                  onClick={handleJoinTeam}
+                  disabled={isJoiningTeam || !selectedTeam}
+                >
+                  {isJoiningTeam ? 'Joining...' : 'Join Team'}
+                </button>
+              </div>
+            ) : (
+              <p style={{ color: 'var(--color-text-muted)' }}>No teams created yet for the selected tournament.</p>
+            )}
           </div>
         )}
 

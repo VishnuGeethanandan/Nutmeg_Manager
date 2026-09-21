@@ -351,10 +351,10 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 ---
 
 ### Module 5 — Tournament Management
-* **Status:** NOT STARTED
-* **Backend:** Not started (Tournament CRUD, Status transition API, Tournament team registration)
-* **Frontend:** Not started (Admin tournament dashboard, Creation form, History page)
-* **Integration:** Not started
+* **Status:** IN PROGRESS
+* **Backend:** Done (Tournament CRUD, Status transition API, Reset Players logic)
+* **Frontend:** Done (Admin tournament dashboard, Creation form, History page, Player join team dropdown)
+* **Integration:** Done
 * **Testing:** Not started
 * **Dependencies:** Module 1 (Auth), Module 3 (Teams)
 * **Remaining Work:** Full module implementation & verification
@@ -458,14 +458,15 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
 - [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI)
 - [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite)
+- [x] **Module 5 (Partial):** Tournament Creation (Admin UI, dynamic team generation, Backend CRUD)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** Ready to begin **Module 5 — Tournament Management**
-* **Current Status:** Module 4 (Player Selection) Completed & Verified. Ready to implement Module 5.
-* **Next Action:** Build Admin UI and API for Tournament CRUD operations and transition states (upcoming, ongoing, completed).
+* **Module Name:** **Module 5 — Tournament Management**
+* **Current Status:** Tournament Creation UI and Backend (with dynamic team array parsing) completed.
+* **Next Action:** Build Admin UI and API for group allocations, and ensure testing is set up for Module 5.
 
 ---
 

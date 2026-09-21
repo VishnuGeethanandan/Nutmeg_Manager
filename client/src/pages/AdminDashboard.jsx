@@ -2,6 +2,7 @@ import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import api from '../services/api';
+import AdminTournamentManager from '../components/AdminTournamentManager';
 
 function AdminDashboard() {
   const { user, logout } = useAuth();
@@ -136,6 +137,7 @@ function AdminDashboard() {
       <div style={{ padding: '0 2rem', marginTop: '1rem' }}>
         <div className="tabs">
           <button className={`tab ${activeTab === 'overview' ? 'active' : ''}`} onClick={() => setActiveTab('overview')}>Overview</button>
+          <button className={`tab ${activeTab === 'tournaments' ? 'active' : ''}`} onClick={() => setActiveTab('tournaments')}>Tournaments</button>
           <button className={`tab ${activeTab === 'captain_requests' ? 'active' : ''}`} onClick={() => setActiveTab('captain_requests')}>Captain Requests</button>
           <button className={`tab ${activeTab === 'teams' ? 'active' : ''}`} onClick={() => setActiveTab('teams')}>Teams</button>
         </div>
@@ -174,6 +176,8 @@ function AdminDashboard() {
             </div>
           </div>
         )}
+
+        {activeTab === 'tournaments' && <AdminTournamentManager />}
 
         {activeTab === 'captain_requests' && (
           <div className="welcome-card" style={{ animation: 'fadeSlideUp 0.5s ease-out' }}>
