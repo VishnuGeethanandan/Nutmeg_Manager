@@ -227,6 +227,7 @@ function TournamentDetails() {
                     <th style={{ padding: '0.5rem' }}>L</th>
                     <th style={{ padding: '0.5rem' }}>GF</th>
                     <th style={{ padding: '0.5rem' }}>GA</th>
+                    <th style={{ padding: '0.5rem' }}>GD</th>
                     <th style={{ padding: '0.5rem' }}>Pts</th>
                   </tr>
                 </thead>
@@ -244,6 +245,7 @@ function TournamentDetails() {
                       <td style={{ padding: '0.75rem' }}>{team.lost}</td>
                       <td style={{ padding: '0.75rem' }}>{team.goalsFor}</td>
                       <td style={{ padding: '0.75rem' }}>{team.goalsAgainst}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalDifference}</td>
                       <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>{team.points}</td>
                     </tr>
                   ))}
@@ -272,6 +274,7 @@ function TournamentDetails() {
                     <th style={{ padding: '0.5rem' }}>L</th>
                     <th style={{ padding: '0.5rem' }}>GF</th>
                     <th style={{ padding: '0.5rem' }}>GA</th>
+                    <th style={{ padding: '0.5rem' }}>GD</th>
                     <th style={{ padding: '0.5rem' }}>Pts</th>
                   </tr>
                 </thead>
@@ -289,6 +292,7 @@ function TournamentDetails() {
                       <td style={{ padding: '0.75rem' }}>{team.lost}</td>
                       <td style={{ padding: '0.75rem' }}>{team.goalsFor}</td>
                       <td style={{ padding: '0.75rem' }}>{team.goalsAgainst}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalDifference}</td>
                       <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>{team.points}</td>
                     </tr>
                   ))}

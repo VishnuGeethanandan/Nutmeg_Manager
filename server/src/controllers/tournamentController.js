@@ -347,6 +347,7 @@ const calculateStandings = async (tournamentId) => {
       points: 0,
       goalsFor: 0,
       goalsAgainst: 0,
+      goalDifference: 0,
       cards: 0
     };
   });
@@ -384,23 +385,15 @@ const calculateStandings = async (tournamentId) => {
     }
   });
 
+  Object.values(stats).forEach(team => {
+    team.goalDifference = team.goalsFor - team.goalsAgainst;
+  });
+
   const sortTeams = (groupTeams) => {
     return groupTeams.sort((a, b) => {
       if (b.points !== a.points) return b.points - a.points;
       
-      const h2hMatch = matches.find(m => 
-        (m.team1.toString() === a._id.toString() && m.team2.toString() === b._id.toString()) ||
-        (m.team1.toString() === b._id.toString() && m.team2.toString() === a._id.toString())
-      );
-
-      if (h2hMatch) {
-        const aIsTeam1 = h2hMatch.team1.toString() === a._id.toString();
-        const aGoals = aIsTeam1 ? h2hMatch.team1Goals : h2hMatch.team2Goals;
-        const bGoals = aIsTeam1 ? h2hMatch.team2Goals : h2hMatch.team1Goals;
-        if (aGoals !== bGoals) return bGoals - aGoals;
-      }
-
-      if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+      if (b.goalDifference !== a.goalDifference) return b.goalDifference - a.goalDifference;
 
       return a.cards - b.cards;
     });
