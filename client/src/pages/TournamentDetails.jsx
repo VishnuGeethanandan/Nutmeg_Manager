@@ -243,14 +243,14 @@ function TournamentDetails() {
                         }} 
                         onClick={() => handleOpenSchedule(match)}
                       >
-                        Schedule
+                        {match.status === 'completed' ? 'Reschedule' : 'Schedule'}
                       </button>
                       <button 
                         className="btn btn-primary" 
                         style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
                         onClick={() => handleOpenResult(match)}
                       >
-                        Result
+                        {match.status === 'completed' ? 'Edit Result' : 'Result'}
                       </button>
                     </div>
                   )}
