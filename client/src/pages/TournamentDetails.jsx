@@ -45,6 +45,12 @@ function TournamentDetails() {
     return interleaved;
   }, [details]);
 
+  const knockoutMatches = useMemo(() => {
+    const matches = details?.matches;
+    if (!matches || matches.length === 0) return [];
+    return matches.filter(m => m.group === 'Semi-Final' || m.group === 'Final');
+  }, [details]);
+
   const fetchDetails = async () => {
     try {
       const [resDetails, resStandings] = await Promise.all([
@@ -117,6 +123,17 @@ function TournamentDetails() {
       alert(err.response?.data?.message || 'Failed to update result');
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleGenerateSemis = async () => {
+    if (!window.confirm('Are you sure you want to generate semi-finals? Ensure all group matches are completed.')) return;
+    try {
+      await api.post(`/tournaments/${tournamentId}/generate-semis`);
+      fetchDetails();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to generate semi-finals');
     }
   };
 
@@ -317,6 +334,83 @@ function TournamentDetails() {
         ) : (
           <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
             <p>No fixtures generated yet.</p>
+          </div>
+        )}
+      </div>
+
+      {/* Knockout Stage */}
+      <div className="glass-card" style={{ animation: 'fadeSlideUp 0.9s ease-out', marginTop: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            ⚔️ Knockout Stage
+          </h2>
+          {user?.role === 'admin' && knockoutMatches.length === 0 && (
+            <button className="btn btn-primary" onClick={handleGenerateSemis}>
+              Generate Semi-Finals
+            </button>
+          )}
+        </div>
+        
+        {knockoutMatches && knockoutMatches.length > 0 ? (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            {knockoutMatches.map(match => (
+              <div key={match._id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid var(--color-primary-light)', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
+                
+                {/* Match Meta */}
+                <div style={{ flex: '0 0 120px', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                  <span style={{ fontSize: '0.875rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>{match.group}</span>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
+                    {match.matchDate ? new Date(match.matchDate).toLocaleString() : 'TBD'}
+                  </span>
+                </div>
+
+                {/* Teams */}
+                <div style={{ flex: '1 1 auto', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', fontSize: '1.25rem', fontWeight: 'bold' }}>
+                  <div style={{ textAlign: 'right', flex: 1 }}>{match.team1?.name || 'TBD'}</div>
+                  <div style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', fontWeight: 'normal', padding: '0 1rem' }}>VS</div>
+                  <div style={{ textAlign: 'left', flex: 1 }}>{match.team2?.name || 'TBD'}</div>
+                </div>
+
+                {/* Status / Score */}
+                <div style={{ flex: '0 0 auto', minWidth: '150px', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                  {match.status === 'completed' ? (
+                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--color-primary-light)' }}>
+                      {match.team1Goals} - {match.team2Goals}
+                    </div>
+                  ) : (
+                    <span className="status-badge scheduled">Scheduled</span>
+                  )}
+
+                  {user?.role === 'admin' && (
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ 
+                          padding: '0.25rem 0.5rem', 
+                          fontSize: '0.75rem',
+                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%)',
+                          borderColor: 'rgba(59, 130, 246, 0.5)'
+                        }} 
+                        onClick={() => handleOpenSchedule(match)}
+                      >
+                        {match.status === 'completed' ? 'Reschedule' : 'Schedule'}
+                      </button>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
+                        onClick={() => handleOpenResult(match)}
+                      >
+                        {match.status === 'completed' ? 'Edit Result' : 'Result'}
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--color-text-muted)' }}>
+            <p>Knockout stage not generated yet.</p>
           </div>
         )}
       </div>

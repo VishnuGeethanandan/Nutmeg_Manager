@@ -326,7 +326,87 @@ const getTournamentDetails = async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-  }
+const calculateStandings = async (tournamentId) => {
+  const allTeams = await Team.find({ tournamentId });
+  const matches = await Match.find({ tournamentId, status: 'completed' });
+
+  const stats = {};
+  
+  allTeams.forEach(team => {
+    stats[team._id] = {
+      _id: team._id,
+      name: team.name,
+      group: team.group,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      points: 0,
+      goalsFor: 0,
+      goalsAgainst: 0,
+      cards: 0
+    };
+  });
+
+  matches.forEach(match => {
+    const t1 = stats[match.team1];
+    const t2 = stats[match.team2];
+
+    if (!t1 || !t2) return;
+
+    t1.played += 1;
+    t2.played += 1;
+    
+    t1.goalsFor += match.team1Goals;
+    t1.goalsAgainst += match.team2Goals;
+    t1.cards += match.team1Cards;
+    
+    t2.goalsFor += match.team2Goals;
+    t2.goalsAgainst += match.team1Goals;
+    t2.cards += match.team2Cards;
+
+    if (match.team1Goals > match.team2Goals) {
+      t1.won += 1;
+      t1.points += 3;
+      t2.lost += 1;
+    } else if (match.team2Goals > match.team1Goals) {
+      t2.won += 1;
+      t2.points += 3;
+      t1.lost += 1;
+    } else {
+      t1.drawn += 1;
+      t2.drawn += 1;
+      t1.points += 1;
+      t2.points += 1;
+    }
+  });
+
+  const sortTeams = (groupTeams) => {
+    return groupTeams.sort((a, b) => {
+      if (b.points !== a.points) return b.points - a.points;
+      
+      const h2hMatch = matches.find(m => 
+        (m.team1.toString() === a._id.toString() && m.team2.toString() === b._id.toString()) ||
+        (m.team1.toString() === b._id.toString() && m.team2.toString() === a._id.toString())
+      );
+
+      if (h2hMatch) {
+        const aIsTeam1 = h2hMatch.team1.toString() === a._id.toString();
+        const aGoals = aIsTeam1 ? h2hMatch.team1Goals : h2hMatch.team2Goals;
+        const bGoals = aIsTeam1 ? h2hMatch.team2Goals : h2hMatch.team1Goals;
+        if (aGoals !== bGoals) return bGoals - aGoals;
+      }
+
+      if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
+
+      return a.cards - b.cards;
+    });
+  };
+
+  const groupA = sortTeams(Object.values(stats).filter(t => t.group === 'A'));
+  const groupB = sortTeams(Object.values(stats).filter(t => t.group === 'B'));
+
+  return { groupA, groupB };
 };
 
 // @desc    Get tournament standings
@@ -337,96 +417,76 @@ const getTournamentStandings = async (req, res, next) => {
     const tournament = await Tournament.findById(req.params.id);
     if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found' });
 
-    const allTeams = await Team.find({ tournamentId: tournament._id });
-    const matches = await Match.find({ tournamentId: tournament._id, status: 'completed' });
-
-    const stats = {};
-    
-    // Initialize stats
-    allTeams.forEach(team => {
-      stats[team._id] = {
-        _id: team._id,
-        name: team.name,
-        group: team.group,
-        played: 0,
-        won: 0,
-        drawn: 0,
-        lost: 0,
-        points: 0,
-        goalsFor: 0,
-        goalsAgainst: 0,
-        cards: 0
-      };
-    });
-
-    // Calculate stats
-    matches.forEach(match => {
-      const t1 = stats[match.team1];
-      const t2 = stats[match.team2];
-
-      if (!t1 || !t2) return;
-
-      t1.played += 1;
-      t2.played += 1;
-      
-      t1.goalsFor += match.team1Goals;
-      t1.goalsAgainst += match.team2Goals;
-      t1.cards += match.team1Cards;
-      
-      t2.goalsFor += match.team2Goals;
-      t2.goalsAgainst += match.team1Goals;
-      t2.cards += match.team2Cards;
-
-      if (match.team1Goals > match.team2Goals) {
-        t1.won += 1;
-        t1.points += 3;
-        t2.lost += 1;
-      } else if (match.team2Goals > match.team1Goals) {
-        t2.won += 1;
-        t2.points += 3;
-        t1.lost += 1;
-      } else {
-        t1.drawn += 1;
-        t2.drawn += 1;
-        t1.points += 1;
-        t2.points += 1;
-      }
-    });
-
-    // Helper to sort teams
-    const sortTeams = (groupTeams) => {
-      return groupTeams.sort((a, b) => {
-        // 1. Points
-        if (b.points !== a.points) return b.points - a.points;
-        
-        // 2. Head-to-Head
-        const h2hMatch = matches.find(m => 
-          (m.team1.toString() === a._id.toString() && m.team2.toString() === b._id.toString()) ||
-          (m.team1.toString() === b._id.toString() && m.team2.toString() === a._id.toString())
-        );
-
-        if (h2hMatch) {
-          const aIsTeam1 = h2hMatch.team1.toString() === a._id.toString();
-          const aGoals = aIsTeam1 ? h2hMatch.team1Goals : h2hMatch.team2Goals;
-          const bGoals = aIsTeam1 ? h2hMatch.team2Goals : h2hMatch.team1Goals;
-          if (aGoals !== bGoals) return bGoals - aGoals;
-        }
-
-        // 3. Most Goals Scored
-        if (b.goalsFor !== a.goalsFor) return b.goalsFor - a.goalsFor;
-
-        // 4. Fewest Cards
-        return a.cards - b.cards;
-      });
-    };
-
-    const groupA = sortTeams(Object.values(stats).filter(t => t.group === 'A'));
-    const groupB = sortTeams(Object.values(stats).filter(t => t.group === 'B'));
+    const standings = await calculateStandings(tournament._id);
 
     res.status(200).json({
       success: true,
-      data: { groupA, groupB }
+      data: standings
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Generate semi-finals
+// @route   POST /api/tournaments/:id/generate-semis
+// @access  Private/Admin
+const generateSemis = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found' });
+
+    // Check if semi-finals already exist
+    const existingSemis = await Match.find({ tournamentId: tournament._id, group: 'Semi-Final' });
+    if (existingSemis.length > 0) {
+      return res.status(400).json({ success: false, message: 'Semi-Finals already generated' });
+    }
+
+    // Check if all group matches are completed
+    const groupMatches = await Match.find({ 
+      tournamentId: tournament._id, 
+      group: { $in: ['A', 'B'] } 
+    });
+
+    if (groupMatches.length !== 12) {
+      return res.status(400).json({ success: false, message: 'Group matches have not been properly generated' });
+    }
+
+    const uncompleted = groupMatches.filter(m => m.status !== 'completed');
+    if (uncompleted.length > 0) {
+      return res.status(400).json({ success: false, message: 'Complete all group matches first' });
+    }
+
+    // Get standings
+    const { groupA, groupB } = await calculateStandings(tournament._id);
+
+    // A1 vs B2, B1 vs A2
+    const a1 = groupA[0];
+    const a2 = groupA[1];
+    const b1 = groupB[0];
+    const b2 = groupB[1];
+
+    if (!a1 || !a2 || !b1 || !b2) {
+       return res.status(400).json({ success: false, message: 'Not enough teams to generate semi-finals' });
+    }
+
+    const semi1 = new Match({
+      tournamentId: tournament._id,
+      group: 'Semi-Final',
+      team1: a1._id,
+      team2: b2._id
+    });
+
+    const semi2 = new Match({
+      tournamentId: tournament._id,
+      group: 'Semi-Final',
+      team1: b1._id,
+      team2: a2._id
+    });
+
+    await Promise.all([semi1.save(), semi2.save()]);
+
+    res.status(200).json({ success: true, message: 'Semi-Finals generated successfully' });
   } catch (error) {
     next(error);
   }
@@ -445,4 +505,5 @@ module.exports = {
   generateFixtures,
   getTournamentDetails,
   getTournamentStandings,
+  generateSemis,
 };

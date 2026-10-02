@@ -12,6 +12,7 @@ const {
   generateFixtures,
   getTournamentDetails,
   getTournamentStandings,
+  generateSemis,
 } = require('../controllers/tournamentController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -33,5 +34,6 @@ router.patch('/:id/status', updateTournamentStatus);
 router.post('/reset-players', resetPlayersActiveState);
 router.post('/:id/allocate-groups', allocateGroups);
 router.post('/:id/generate-fixtures', generateFixtures);
+router.post('/:id/generate-semis', generateSemis);
 
 module.exports = router;

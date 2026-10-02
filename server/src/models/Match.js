@@ -9,7 +9,7 @@ const matchSchema = new mongoose.Schema(
     },
     group: {
       type: String,
-      enum: ['A', 'B'],
+      enum: ['A', 'B', 'Semi-Final', 'Final'],
       required: true,
     },
     team1: {
