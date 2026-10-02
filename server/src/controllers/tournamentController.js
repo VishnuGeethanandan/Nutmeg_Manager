@@ -495,6 +495,70 @@ const generateSemis = async (req, res, next) => {
   }
 };
 
+// @desc    Generate final
+// @route   POST /api/tournaments/:id/generate-final
+// @access  Private/Admin
+const generateFinal = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found' });
+
+    // Check if final already exists
+    const existingFinal = await Match.findOne({ tournamentId: tournament._id, group: 'Final' });
+    if (existingFinal) {
+      return res.status(400).json({ success: false, message: 'Final already generated' });
+    }
+
+    // Get semi-finals
+    const semiMatches = await Match.find({ 
+      tournamentId: tournament._id, 
+      group: 'Semi-Final' 
+    });
+
+    if (semiMatches.length !== 2) {
+      return res.status(400).json({ success: false, message: 'Semi-Finals have not been properly generated' });
+    }
+
+    const uncompleted = semiMatches.filter(m => m.status !== 'completed');
+    if (uncompleted.length > 0) {
+      return res.status(400).json({ success: false, message: 'Complete all Semi-Final matches first' });
+    }
+
+    const winners = [];
+
+    for (const match of semiMatches) {
+      // Determine winner
+      // A tie should have been resolved (e.g. by penalties represented in goals or via some manual adjust).
+      // Here we assume higher total goals (including penalties if they adjusted them) is the winner.
+      // If it's a strict tie for some reason, we'll pick team1 as a fallback or return error.
+      if (match.team1Goals > match.team2Goals) {
+        winners.push(match.team1);
+      } else if (match.team2Goals > match.team1Goals) {
+        winners.push(match.team2);
+      } else {
+        return res.status(400).json({ success: false, message: `Match ${match._id} is a tie. Adjust the score to reflect the penalty shootout winner.` });
+      }
+    }
+
+    if (winners.length !== 2) {
+       return res.status(400).json({ success: false, message: 'Could not determine winners for Semi-Finals' });
+    }
+
+    const finalMatch = new Match({
+      tournamentId: tournament._id,
+      group: 'Final',
+      team1: winners[0],
+      team2: winners[1]
+    });
+
+    await finalMatch.save();
+
+    res.status(200).json({ success: true, message: 'Grand Final generated successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTournaments,
   getActiveTournament,
@@ -509,4 +573,5 @@ module.exports = {
   getTournamentDetails,
   getTournamentStandings,
   generateSemis,
+  generateFinal,
 };

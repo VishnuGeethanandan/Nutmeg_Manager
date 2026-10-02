@@ -1,4 +1,5 @@
 const Match = require('../models/Match');
+const Tournament = require('../models/Tournament');
 
 // @desc    Update match details (schedule, goals, cards, status)
 // @route   PUT /api/matches/:id
@@ -21,6 +22,14 @@ const updateMatch = async (req, res, next) => {
     if (team2Cards !== undefined) match.team2Cards = team2Cards;
 
     await match.save();
+
+    if (match.group === 'Final' && match.status === 'completed') {
+      const tournament = await Tournament.findById(match.tournamentId);
+      if (tournament && tournament.status !== 'completed') {
+        tournament.status = 'completed';
+        await tournament.save();
+      }
+    }
 
     res.status(200).json({
       success: true,

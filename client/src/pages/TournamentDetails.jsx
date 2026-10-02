@@ -137,6 +137,17 @@ function TournamentDetails() {
     }
   };
 
+  const handleGenerateFinal = async () => {
+    if (!window.confirm('Are you sure you want to generate the Grand Final? Ensure both Semi-Finals are completed.')) return;
+    try {
+      await api.post(`/tournaments/${tournamentId}/generate-final`);
+      fetchDetails();
+    } catch (err) {
+      console.error(err);
+      alert(err.response?.data?.message || 'Failed to generate Grand Final');
+    }
+  };
+
   if (loading) {
     return (
       <div className="layout-container" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
@@ -174,6 +185,28 @@ function TournamentDetails() {
           </span>
         </div>
       </div>
+
+      {/* Tournament Champion Banner */}
+      {knockoutMatches.some(m => m.group === 'Final' && m.status === 'completed') && (
+        <div className="glass-card" style={{ 
+          marginBottom: '2rem', 
+          textAlign: 'center', 
+          background: 'linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 140, 0, 0.2) 100%)',
+          borderColor: 'rgba(255, 215, 0, 0.5)',
+          animation: 'fadeSlideUp 0.5s ease-out'
+        }}>
+          <h1 style={{ color: '#FFD700', fontSize: '2.5rem', marginBottom: '0.5rem', textShadow: '0 2px 10px rgba(255,215,0,0.3)' }}>
+            🏆 TOURNAMENT CHAMPION 🏆
+          </h1>
+          <h2 style={{ fontSize: '2rem', color: '#FFF' }}>
+            {(() => {
+              const finalMatch = knockoutMatches.find(m => m.group === 'Final' && m.status === 'completed');
+              if (!finalMatch) return '';
+              return finalMatch.team1Goals > finalMatch.team2Goals ? finalMatch.team1.name : finalMatch.team2.name;
+            })()}
+          </h2>
+        </div>
+      )}
 
       {/* Group Standings */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
@@ -347,6 +380,14 @@ function TournamentDetails() {
           {user?.role === 'admin' && knockoutMatches.length === 0 && (
             <button className="btn btn-primary" onClick={handleGenerateSemis}>
               Generate Semi-Finals
+            </button>
+          )}
+          {user?.role === 'admin' && 
+           knockoutMatches.length > 0 && 
+           !knockoutMatches.some(m => m.group === 'Final') && 
+           knockoutMatches.filter(m => m.group === 'Semi-Final').every(m => m.status === 'completed') && (
+            <button className="btn btn-primary" onClick={handleGenerateFinal}>
+              Generate Final
             </button>
           )}
         </div>
