@@ -8,7 +8,7 @@ function PlayerDashboard() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [tournaments, setTournaments] = useState([]);
-  const [upcomingTournament, setUpcomingTournament] = useState(null);
+  const [activeTournament, setActiveTournament] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState('');
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState('');
@@ -24,18 +24,18 @@ function PlayerDashboard() {
     if (hasProfile) {
       fetchRequests();
       fetchTournaments();
-      fetchUpcomingTournament();
+      fetchActiveTournament();
     }
   }, [hasProfile]);
 
-  const fetchUpcomingTournament = async () => {
+  const fetchActiveTournament = async () => {
     try {
-      const res = await api.get('/tournaments/upcoming');
+      const res = await api.get('/tournaments/active');
       if (res.data && res.data.data) {
-        setUpcomingTournament(res.data.data);
+        setActiveTournament(res.data.data);
       }
     } catch (err) {
-      console.error('Failed to fetch upcoming tournament', err);
+      console.error('Failed to fetch active tournament', err);
     }
   };
 
@@ -124,8 +124,8 @@ function PlayerDashboard() {
     Forward: '⚡',
   };
 
-  const currentRequestForUpcoming = upcomingTournament 
-    ? requests.find(req => req.tournamentId?._id === upcomingTournament._id || req.tournamentId === upcomingTournament._id)
+  const currentRequestForActive = activeTournament 
+    ? requests.find(req => req.tournamentId?._id === activeTournament._id || req.tournamentId === activeTournament._id)
     : null;
 
   return (
@@ -147,20 +147,20 @@ function PlayerDashboard() {
       {/* Content */}
       <main className="dashboard-content">
         
-        {hasProfile && upcomingTournament && (
+        {hasProfile && activeTournament && (
           <div className="cta-card glass-card" style={{ animation: 'fadeSlideUp 0.5s ease-out', marginBottom: 'var(--spacing-xl)', borderColor: 'var(--color-primary-light)' }}>
             <div className="cta-card-icon">🏆</div>
-            <h2 className="cta-card-title">Tournament {upcomingTournament.name} {upcomingTournament.year} is Upcoming!</h2>
+            <h2 className="cta-card-title">Tournament {activeTournament.name} {activeTournament.year} is {activeTournament.status === 'ongoing' ? 'Ongoing' : 'Upcoming'}!</h2>
             
             <button
               className="btn btn-secondary"
               style={{ width: 'auto', marginBottom: '1rem', marginTop: '1rem' }}
-              onClick={() => navigate(`/tournaments/${upcomingTournament._id}`)}
+              onClick={() => navigate(`/tournaments/${activeTournament._id}`)}
             >
               View Tournament Hub
             </button>
             
-            {!currentRequestForUpcoming && (
+            {!currentRequestForActive && activeTournament.status === 'upcoming' && (
               <>
                 <p className="cta-card-description">
                   Represent your department! You can request to be the team captain for the upcoming tournament.
@@ -180,30 +180,30 @@ function PlayerDashboard() {
               </>
             )}
 
-            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'pending' && (
+            {currentRequestForActive && currentRequestForActive.status === 'pending' && (
               <p className="cta-card-description" style={{ color: 'var(--color-warning)' }}>
-                ⏳ Captaincy Request Pending for {upcomingTournament.year}
+                ⏳ Captaincy Request Pending for {activeTournament.year}
               </p>
             )}
 
-            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'approved' && (
+            {currentRequestForActive && currentRequestForActive.status === 'approved' && (
               <>
                 <p className="cta-card-description" style={{ color: 'var(--color-success)' }}>
-                  ✅ You are the approved Captain for {upcomingTournament.year}!
+                  ✅ You are the approved Captain for {activeTournament.year}!
                 </p>
                 <button
                   className="btn btn-primary"
                   style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
-                  onClick={() => navigate('/player/squad', { state: { teamId: currentRequestForUpcoming.teamId } })}
+                  onClick={() => navigate('/player/squad', { state: { teamId: currentRequestForActive.teamId } })}
                 >
                   Manage Squad
                 </button>
               </>
             )}
             
-            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'rejected' && (
+            {currentRequestForActive && currentRequestForActive.status === 'rejected' && (
               <p className="cta-card-description" style={{ color: 'var(--color-error)' }}>
-                ❌ Your captaincy request for {upcomingTournament.year} was rejected.
+                ❌ Your captaincy request for {activeTournament.year} was rejected.
               </p>
             )}
           </div>
