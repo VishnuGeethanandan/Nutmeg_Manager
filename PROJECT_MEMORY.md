@@ -117,10 +117,11 @@ updatedAt       : Date
 ### 4. `captainRequests`
 Workflow tracking player captaincy requests.
 ```text
-_id         : ObjectId
-playerId    : ObjectId (Ref: 'players', Required)
-teamId      : ObjectId (Ref: 'teams', Required)
-status      : Enum ['pending', 'approved', 'rejected'] (Default: 'pending')
+_id           : ObjectId
+playerId      : ObjectId (Ref: 'players', Required)
+tournamentId  : ObjectId (Ref: 'tournaments', Required)
+teamId        : ObjectId (Ref: 'teams', Required)
+status        : Enum ['pending', 'approved', 'rejected'] (Default: 'pending')
 reviewedBy  : ObjectId (Ref: 'users', Nullable)
 reviewedAt  : Date (Nullable)
 createdAt   : Date
@@ -458,7 +459,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
 - [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI)
 - [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite)
-- [x] **Module 5 (Partial):** Tournament Creation (Admin UI, dynamic team generation, Backend CRUD)
+- [x] **Module 5 (Partial):** Tournament Creation (Admin UI, dynamic team generation, Backend CRUD) & Tournament-Aware Captain Requests (Module 3/5 Integration)
 
 ---
 

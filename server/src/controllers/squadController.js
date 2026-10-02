@@ -8,27 +8,21 @@ const Tournament = require('../models/Tournament');
 // @access  Private (Captain only)
 const getCaptainTeam = async (req, res, next) => {
   try {
-    const { tournamentId } = req.query;
-
-    if (!tournamentId) {
-      return res.status(400).json({ success: false, message: 'Tournament ID is required.' });
-    }
+    const { teamId } = req.params;
 
     const player = await Player.findOne({ userId: req.user._id });
     if (!player) {
       return res.status(404).json({ success: false, message: 'Player profile not found.' });
     }
 
-    // Find the team where this player is the captain for the given tournament
-    const team = await Team.findOne({ tournamentId, captainId: player._id })
+    const team = await Team.findOne({ _id: teamId, captainId: player._id })
       .populate('tournamentId', 'name year')
       .populate('captainId', 'name admissionNumber departmentName position photo');
 
     if (!team) {
-      return res.status(404).json({ success: false, message: 'You are not the captain of any team in this tournament.' });
+      return res.status(404).json({ success: false, message: 'Team not found or you are not the captain.' });
     }
 
-    // Fetch roster
     const memberships = await TeamMembership.find({ teamId: team._id }).populate(
       'playerId',
       'name admissionNumber departmentName position jerseyNumber photo'
@@ -49,36 +43,28 @@ const getCaptainTeam = async (req, res, next) => {
 // @access  Private (Captain only)
 const getEligiblePlayers = async (req, res, next) => {
   try {
-    const { tournamentId } = req.query;
-
-    if (!tournamentId) {
-      return res.status(400).json({ success: false, message: 'Tournament ID is required.' });
-    }
+    const { teamId } = req.params;
 
     const captain = await Player.findOne({ userId: req.user._id });
     if (!captain) {
       return res.status(404).json({ success: false, message: 'Player profile not found.' });
     }
 
-    // Ensure they are actually a captain in this tournament
-    const team = await Team.findOne({ tournamentId, captainId: captain._id });
-    if (!team) {
-       return res.status(403).json({ success: false, message: 'Not authorized. You are not a captain in this tournament.' });
+    const team = await Team.findById(teamId);
+    if (!team || team.captainId.toString() !== captain._id.toString()) {
+       return res.status(403).json({ success: false, message: 'Not authorized. You are not the captain of this team.' });
     }
 
-    // Find all players in the same department
     const departmentPlayers = await Player.find({ departmentName: captain.departmentName });
     const departmentPlayerIds = departmentPlayers.map((p) => p._id);
 
-    // Find which of these players already have a team in this tournament
     const existingMemberships = await TeamMembership.find({
-      tournamentId,
+      tournamentId: team.tournamentId,
       playerId: { $in: departmentPlayerIds },
     });
     
     const assignedPlayerIds = existingMemberships.map((m) => m.playerId.toString());
 
-    // Filter out assigned players
     const eligiblePlayers = departmentPlayers.filter(
       (p) => !assignedPlayerIds.includes(p._id.toString())
     );
@@ -105,10 +91,11 @@ const getEligiblePlayers = async (req, res, next) => {
 // @access  Private (Captain only)
 const addPlayerToSquad = async (req, res, next) => {
   try {
-    const { tournamentId, playerId } = req.body;
+    const { teamId } = req.params;
+    const { playerId } = req.body;
 
-    if (!tournamentId || !playerId) {
-      return res.status(400).json({ success: false, message: 'Tournament ID and Player ID are required.' });
+    if (!playerId) {
+      return res.status(400).json({ success: false, message: 'Player ID is required.' });
     }
 
     const captain = await Player.findOne({ userId: req.user._id });
@@ -116,9 +103,9 @@ const addPlayerToSquad = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Your player profile not found.' });
     }
 
-    const team = await Team.findOne({ tournamentId, captainId: captain._id });
-    if (!team) {
-       return res.status(403).json({ success: false, message: 'Not authorized. You are not a captain in this tournament.' });
+    const team = await Team.findById(teamId);
+    if (!team || team.captainId.toString() !== captain._id.toString()) {
+       return res.status(403).json({ success: false, message: 'Not authorized. You are not the captain of this team.' });
     }
 
     // Check squad size (Max 15)
@@ -136,17 +123,15 @@ const addPlayerToSquad = async (req, res, next) => {
       return res.status(400).json({ success: false, message: 'Can only select players from your own department.' });
     }
 
-    // Check if player is already in ANY team for this tournament
-    const existingMembership = await TeamMembership.findOne({ tournamentId, playerId });
+    const existingMembership = await TeamMembership.findOne({ tournamentId: team.tournamentId, playerId });
     if (existingMembership) {
       return res.status(400).json({ success: false, message: 'Player is already assigned to a team in this tournament.' });
     }
 
-    // Add to squad
     const newMembership = await TeamMembership.create({
       playerId,
       teamId: team._id,
-      tournamentId
+      tournamentId: team.tournamentId
     });
 
     res.status(201).json({
@@ -165,21 +150,16 @@ const addPlayerToSquad = async (req, res, next) => {
 // @access  Private (Captain only)
 const removePlayerFromSquad = async (req, res, next) => {
   try {
-    const { playerId } = req.params;
-    const { tournamentId } = req.query;
-
-    if (!tournamentId) {
-       return res.status(400).json({ success: false, message: 'Tournament ID is required.' });
-    }
+    const { teamId, playerId } = req.params;
 
     const captain = await Player.findOne({ userId: req.user._id });
     if (!captain) {
       return res.status(404).json({ success: false, message: 'Your player profile not found.' });
     }
 
-    const team = await Team.findOne({ tournamentId, captainId: captain._id });
-    if (!team) {
-       return res.status(403).json({ success: false, message: 'Not authorized. You are not a captain in this tournament.' });
+    const team = await Team.findById(teamId);
+    if (!team || team.captainId.toString() !== captain._id.toString()) {
+       return res.status(403).json({ success: false, message: 'Not authorized. You are not the captain of this team.' });
     }
 
     if (playerId === captain._id.toString()) {

@@ -181,7 +181,7 @@ function PlayerDashboard() {
                 <button
                   className="btn btn-primary"
                   style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
-                  onClick={() => navigate('/player/squad')}
+                  onClick={() => navigate('/player/squad', { state: { teamId: currentRequestForUpcoming.teamId } })}
                 >
                   Manage Squad
                 </button>
@@ -384,7 +384,7 @@ function PlayerDashboard() {
                           <button 
                             className="btn btn-primary" 
                             style={{ padding: '0.25rem 0.5rem', width: 'auto', fontSize: '0.875rem', marginLeft: 'var(--spacing-md)' }}
-                            onClick={() => navigate('/player/squad')}
+                            onClick={() => navigate('/player/squad', { state: { teamId: req.teamId } })}
                           >
                             Manage Squad
                           </button>

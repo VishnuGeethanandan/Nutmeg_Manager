@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
 
 function SquadManager() {
   const { user, playerProfile, hasProfile } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
+  const teamId = location.state?.teamId;
   
   const [team, setTeam] = useState(null);
   const [roster, setRoster] = useState([]);
@@ -13,52 +15,24 @@ function SquadManager() {
   
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
-  
-  // A captain must select a tournament context. For now, assume the latest active one.
-  // In a robust implementation, we would pass this or select it. Let's fetch tournaments first.
-  const [tournaments, setTournaments] = useState([]);
-  const [selectedTournament, setSelectedTournament] = useState('');
 
   useEffect(() => {
-    if (!hasProfile) {
+    if (!hasProfile || !teamId) {
       navigate('/player/dashboard');
       return;
     }
-    fetchTournaments();
-  }, [hasProfile, navigate]);
-
-  useEffect(() => {
-    if (selectedTournament) {
-      fetchSquadData();
-    }
-  }, [selectedTournament]);
-
-  const fetchTournaments = async () => {
-    try {
-      const res = await api.get('/tournaments');
-      const activeTournaments = res.data.tournaments || [];
-      setTournaments(activeTournaments);
-      if (activeTournaments.length > 0) {
-        setSelectedTournament(activeTournaments[0]._id);
-      } else {
-        setLoading(false);
-      }
-    } catch (err) {
-      console.error('Failed to fetch tournaments', err);
-      setErrorMsg('Failed to load tournaments.');
-      setLoading(false);
-    }
-  };
+    fetchSquadData();
+  }, [hasProfile, navigate, teamId]);
 
   const fetchSquadData = async () => {
     setLoading(true);
     setErrorMsg('');
     try {
-      const teamRes = await api.get(`/squad/my-team?tournamentId=${selectedTournament}`);
+      const teamRes = await api.get(`/teams/${teamId}/members`);
       setTeam(teamRes.data.team);
       setRoster(teamRes.data.roster);
       
-      const eligibleRes = await api.get(`/squad/eligible-players?tournamentId=${selectedTournament}`);
+      const eligibleRes = await api.get(`/teams/${teamId}/eligible-players`);
       setEligiblePlayers(eligibleRes.data.players);
     } catch (err) {
       console.error('Failed to fetch squad data', err);
@@ -77,8 +51,7 @@ function SquadManager() {
 
   const handleAddPlayer = async (playerId) => {
     try {
-      await api.post('/squad/roster', {
-        tournamentId: selectedTournament,
+      await api.post(`/teams/${teamId}/members`, {
         playerId
       });
       // Refresh data
@@ -91,7 +64,7 @@ function SquadManager() {
   const handleRemovePlayer = async (playerId) => {
     if (!window.confirm('Are you sure you want to remove this player from the squad?')) return;
     try {
-      await api.delete(`/squad/roster/${playerId}?tournamentId=${selectedTournament}`);
+      await api.delete(`/teams/${teamId}/members/${playerId}`);
       // Refresh data
       fetchSquadData();
     } catch (err) {
@@ -122,22 +95,6 @@ function SquadManager() {
       </header>
 
       <main className="dashboard-content">
-        <div className="welcome-card" style={{ marginBottom: 'var(--spacing-lg)' }}>
-          <div style={{ display: 'flex', gap: 'var(--spacing-md)', alignItems: 'center' }}>
-            <label style={{ fontWeight: '500' }}>Select Tournament:</label>
-            <select 
-              className="form-input" 
-              style={{ width: 'auto' }}
-              value={selectedTournament}
-              onChange={(e) => setSelectedTournament(e.target.value)}
-            >
-              {tournaments.map(t => (
-                <option key={t._id} value={t._id}>{t.name} ({t.year})</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
         {errorMsg && (
           <div className="form-alert error" style={{ marginBottom: 'var(--spacing-md)' }}>
             {errorMsg}
