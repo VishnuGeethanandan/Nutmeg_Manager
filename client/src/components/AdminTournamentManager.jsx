@@ -98,6 +98,26 @@ function AdminTournamentManager() {
     }
   };
 
+  const handleAllocateGroups = async (id) => {
+    try {
+      const res = await api.post(`/tournaments/${id}/allocate-groups`);
+      alert(res.data.message || 'Groups allocated successfully!');
+      fetchTournaments();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to allocate groups');
+    }
+  };
+
+  const handleGenerateFixtures = async (id) => {
+    try {
+      const res = await api.post(`/tournaments/${id}/generate-fixtures`);
+      alert(`Success! Generated ${res.data.count} fixtures.`);
+      fetchTournaments();
+    } catch (err) {
+      alert(err.response?.data?.message || 'Failed to generate fixtures');
+    }
+  };
+
   return (
     <div className="welcome-card" style={{ animation: 'fadeSlideUp 0.5s ease-out' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
@@ -210,16 +230,34 @@ function AdminTournamentManager() {
                   </td>
                   <td style={{ padding: '0.75rem' }}>{t.maxTeams}</td>
                   <td style={{ padding: '0.75rem' }}>
-                    <select 
-                      className="form-input"
-                      style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
-                      value={t.status}
-                      onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
-                    >
-                      <option value="upcoming">Upcoming</option>
-                      <option value="ongoing">Ongoing</option>
-                      <option value="completed">Completed</option>
-                    </select>
+                    <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      <select 
+                        className="form-input"
+                        style={{ width: 'auto', padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                        value={t.status}
+                        onChange={(e) => handleUpdateStatus(t._id, e.target.value)}
+                      >
+                        <option value="upcoming">Upcoming</option>
+                        <option value="ongoing">Ongoing</option>
+                        <option value="completed">Completed</option>
+                      </select>
+                      
+                      <button 
+                        className="btn btn-secondary"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                        onClick={() => handleAllocateGroups(t._id)}
+                      >
+                        Allocate Groups
+                      </button>
+                      
+                      <button 
+                        className="btn btn-secondary"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                        onClick={() => handleGenerateFixtures(t._id)}
+                      >
+                        Generate Fixtures
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))

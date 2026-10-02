@@ -8,6 +8,8 @@ const {
   updateTournament,
   updateTournamentStatus,
   resetPlayersActiveState,
+  allocateGroups,
+  generateFixtures,
 } = require('../controllers/tournamentController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -25,5 +27,7 @@ router.post('/', createTournament);
 router.put('/:id', updateTournament);
 router.patch('/:id/status', updateTournamentStatus);
 router.post('/reset-players', resetPlayersActiveState);
+router.post('/:id/allocate-groups', allocateGroups);
+router.post('/:id/generate-fixtures', generateFixtures);
 
 module.exports = router;

@@ -17,6 +17,11 @@ const teamSchema = new mongoose.Schema(
       ref: 'Player',
       default: null,
     },
+    group: {
+      type: String,
+      enum: ['A', 'B'],
+      default: null,
+    },
   },
   { timestamps: true }
 );

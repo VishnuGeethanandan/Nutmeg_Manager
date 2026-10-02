@@ -121,6 +121,7 @@ _id           : ObjectId
 playerId      : ObjectId (Ref: 'players', Required)
 tournamentId  : ObjectId (Ref: 'tournaments', Required)
 teamId        : ObjectId (Ref: 'teams', Required)
+achievements  : String (Max length: 1000, Default: '')
 status        : Enum ['pending', 'approved', 'rejected'] (Default: 'pending')
 reviewedBy  : ObjectId (Ref: 'users', Nullable)
 reviewedAt  : Date (Nullable)
@@ -459,15 +460,15 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
 - [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI + Captain Achievements Enhancement)
 - [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite + Active Team Display logic)
-- [x] **Module 5 (Partial):** Tournament Creation (Admin UI, dynamic team generation, Backend CRUD) & Tournament-Aware Captain Requests (Module 3/5 Integration)
+- [x] **Module 5 Completed:** Tournament Management (Admin UI, dynamic team generation, Backend CRUD, Group Allocation API, Automated Round-Robin Fixture Generation) & Tournament-Aware Captain Requests (Module 3/5 Integration)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** **Module 5 — Tournament Management**
-* **Current Status:** Tournament Creation UI and Backend (with dynamic team array parsing) completed.
-* **Next Action:** Build Admin UI and API for group allocations, and ensure testing is set up for Module 5.
+* **Module Name:** **Module 7 — Fixture Management (Frontend)**
+* **Current Status:** Automated backend fixture generation is complete.
+* **Next Action:** Build Admin UI to view the generated fixture schedule list and set match dates/times.
 
 ---
 
@@ -477,7 +478,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 2:** Player Profile (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 8:** Match Management (DB + Backend + Frontend + Integration + Testing)

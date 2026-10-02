@@ -2,6 +2,7 @@ const Tournament = require('../models/Tournament');
 const Player = require('../models/Player');
 const User = require('../models/User');
 const Team = require('../models/Team');
+const Match = require('../models/Match');
 
 // @desc    Get all tournaments
 // @route   GET /api/tournaments
@@ -214,6 +215,87 @@ const resetPlayersActiveState = async (req, res, next) => {
   }
 };
 
+// @desc    Allocate teams to Group A and Group B randomly
+// @route   POST /api/tournaments/:id/allocate-groups
+// @access  Private/Admin
+const allocateGroups = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found' });
+
+    const teams = await Team.find({ tournamentId: tournament._id });
+    if (teams.length !== 8) {
+      return res.status(400).json({ success: false, message: 'Need exactly 8 teams to allocate groups' });
+    }
+
+    const alreadyAllocated = teams.some(t => t.group !== null && t.group !== undefined);
+    if (alreadyAllocated) {
+      return res.status(400).json({ success: false, message: 'Groups are already allocated' });
+    }
+
+    const shuffled = [...teams].sort(() => 0.5 - Math.random());
+    const groupA = shuffled.slice(0, 4);
+    const groupB = shuffled.slice(4, 8);
+
+    await Promise.all(groupA.map(t => Team.findByIdAndUpdate(t._id, { group: 'A' })));
+    await Promise.all(groupB.map(t => Team.findByIdAndUpdate(t._id, { group: 'B' })));
+
+    res.status(200).json({ success: true, message: 'Groups allocated successfully' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Generate round-robin fixtures
+// @route   POST /api/tournaments/:id/generate-fixtures
+// @access  Private/Admin
+const generateFixtures = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) return res.status(404).json({ success: false, message: 'Tournament not found' });
+
+    const existingMatches = await Match.findOne({ tournamentId: tournament._id });
+    if (existingMatches) {
+      return res.status(400).json({ success: false, message: 'Fixtures already generated for this tournament' });
+    }
+
+    const groupATeams = await Team.find({ tournamentId: tournament._id, group: 'A' });
+    const groupBTeams = await Team.find({ tournamentId: tournament._id, group: 'B' });
+
+    if (groupATeams.length !== 4 || groupBTeams.length !== 4) {
+      return res.status(400).json({ success: false, message: 'Must allocate exactly 4 teams to Group A and 4 to Group B before generating fixtures' });
+    }
+
+    const generateRoundRobin = (teams, group) => {
+      const matches = [
+        { team1: teams[0]._id, team2: teams[1]._id },
+        { team1: teams[2]._id, team2: teams[3]._id },
+        { team1: teams[0]._id, team2: teams[2]._id },
+        { team1: teams[1]._id, team2: teams[3]._id },
+        { team1: teams[0]._id, team2: teams[3]._id },
+        { team1: teams[1]._id, team2: teams[2]._id },
+      ];
+      return matches.map(m => ({
+        tournamentId: tournament._id,
+        group,
+        team1: m.team1,
+        team2: m.team2,
+        status: 'scheduled'
+      }));
+    };
+
+    const groupAMatches = generateRoundRobin(groupATeams, 'A');
+    const groupBMatches = generateRoundRobin(groupBTeams, 'B');
+
+    const allMatches = [...groupAMatches, ...groupBMatches];
+    await Match.insertMany(allMatches);
+
+    res.status(201).json({ success: true, message: 'Fixtures generated successfully', count: allMatches.length });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTournaments,
   getActiveTournament,
@@ -223,4 +305,6 @@ module.exports = {
   updateTournament,
   updateTournamentStatus,
   resetPlayersActiveState,
+  allocateGroups,
+  generateFixtures,
 };
