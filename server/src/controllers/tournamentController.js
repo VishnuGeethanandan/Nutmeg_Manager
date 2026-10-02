@@ -331,7 +331,11 @@ const getTournamentDetails = async (req, res, next) => {
 
 const calculateStandings = async (tournamentId) => {
   const allTeams = await Team.find({ tournamentId });
-  const matches = await Match.find({ tournamentId, status: 'completed' });
+  const matches = await Match.find({ 
+    tournamentId, 
+    status: 'completed',
+    group: { $in: ['A', 'B'] }
+  });
 
   const stats = {};
   
