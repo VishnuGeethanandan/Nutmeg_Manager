@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
@@ -43,6 +43,19 @@ function TournamentDetails() {
   }
 
   const { tournament, groupA, groupB, matches } = details;
+
+  const interleavedMatches = useMemo(() => {
+    if (!matches || matches.length === 0) return [];
+    const matchesA = matches.filter(m => m.group === 'A');
+    const matchesB = matches.filter(m => m.group === 'B');
+    const interleaved = [];
+    const maxLength = Math.max(matchesA.length, matchesB.length);
+    for (let i = 0; i < maxLength; i++) {
+      if (i < matchesA.length) interleaved.push(matchesA[i]);
+      if (i < matchesB.length) interleaved.push(matchesB[i]);
+    }
+    return interleaved;
+  }, [matches]);
 
   return (
     <div className="layout-container" style={{ padding: '2rem' }}>
@@ -110,9 +123,9 @@ function TournamentDetails() {
           📅 Fixtures Schedule
         </h2>
         
-        {matches && matches.length > 0 ? (
+        {interleavedMatches && interleavedMatches.length > 0 ? (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            {matches.map(match => (
+            {interleavedMatches.map(match => (
               <div key={match._id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '1rem' }}>
                 
                 {/* Match Meta (Group & Time) */}
