@@ -50,7 +50,7 @@ const getActiveTournament = async (req, res, next) => {
 const getUpcomingTournament = async (req, res, next) => {
   try {
     const tournament = await Tournament.findOne({
-      status: 'upcoming',
+      status: { $regex: /^upcoming$/i },
     }).select('name year _id');
 
     if (!tournament) {
