@@ -296,6 +296,39 @@ const generateFixtures = async (req, res, next) => {
   }
 };
 
+// @desc    Get tournament details (groups and fixtures)
+// @route   GET /api/tournaments/:id/details
+// @access  Private
+const getTournamentDetails = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findById(req.params.id);
+    if (!tournament) {
+      return res.status(404).json({ success: false, message: 'Tournament not found' });
+    }
+
+    const allTeams = await Team.find({ tournamentId: tournament._id });
+    const groupA = allTeams.filter(t => t.group === 'A');
+    const groupB = allTeams.filter(t => t.group === 'B');
+
+    const matches = await Match.find({ tournamentId: tournament._id })
+      .populate('team1', 'name')
+      .populate('team2', 'name')
+      .sort({ group: 1 });
+
+    res.status(200).json({
+      success: true,
+      data: {
+        tournament,
+        groupA,
+        groupB,
+        matches
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 module.exports = {
   getTournaments,
   getActiveTournament,
@@ -307,4 +340,5 @@ module.exports = {
   resetPlayersActiveState,
   allocateGroups,
   generateFixtures,
+  getTournamentDetails,
 };

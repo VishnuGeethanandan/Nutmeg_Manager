@@ -1,9 +1,27 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import api from '../services/api';
 
 function SpectatorDashboard() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [upcomingTournament, setUpcomingTournament] = useState(null);
+
+  useEffect(() => {
+    fetchUpcomingTournament();
+  }, []);
+
+  const fetchUpcomingTournament = async () => {
+    try {
+      const res = await api.get('/tournaments/upcoming');
+      if (res.data && res.data.data) {
+        setUpcomingTournament(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch upcoming tournament', err);
+    }
+  };
 
   const handleLogout = async () => {
     await logout();
@@ -57,9 +75,27 @@ function SpectatorDashboard() {
           </div>
 
           <div className="welcome-placeholder">
-            👀 Tournament fixtures, results, and standings will appear here in future modules.
+            👀 Player statistics, match events, and standings will appear here in future modules.
           </div>
         </div>
+
+        {upcomingTournament && (
+          <div className="cta-card glass-card" style={{ animation: 'fadeSlideUp 0.6s ease-out', marginTop: 'var(--spacing-xl)', borderColor: 'var(--color-primary-light)' }}>
+            <div className="cta-card-icon">🏆</div>
+            <h2 className="cta-card-title">Tournament {upcomingTournament.name} {upcomingTournament.year} is Upcoming!</h2>
+            <p className="cta-card-description">
+              View the allocated groups and the match fixture schedule!
+            </p>
+            
+            <button
+              className="btn btn-primary"
+              style={{ width: 'auto', marginTop: '1rem' }}
+              onClick={() => navigate(`/tournaments/${upcomingTournament._id}`)}
+            >
+              View Tournament Hub
+            </button>
+          </div>
+        )}
       </main>
     </div>
   );

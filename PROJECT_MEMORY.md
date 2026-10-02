@@ -466,9 +466,9 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 
 ## 9. Current Module
 
-* **Module Name:** **Module 7 — Fixture Management (Frontend)**
-* **Current Status:** Automated backend fixture generation is complete.
-* **Next Action:** Build Admin UI to view the generated fixture schedule list and set match dates/times.
+* **Module Name:** **Module 8 — Match Management**
+* **Current Status:** Not started.
+* **Next Action:** Build Admin UI to set match dates/times and log match events (goals, cards, extra time).
 
 ---
 
@@ -479,8 +479,8 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 3:** Team & Captain Management (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 4:** Player Selection (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 8:** Match Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 9:** Standings & Qualification (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 10:** Player Statistics & Tournament History (DB + Backend + Frontend + Integration + Testing)

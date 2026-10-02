@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../services/api';
 
 function AdminTournamentManager() {
+  const navigate = useNavigate();
   const [tournaments, setTournaments] = useState([]);
   const [isCreating, setIsCreating] = useState(false);
   const [error, setError] = useState('');
@@ -256,6 +258,14 @@ function AdminTournamentManager() {
                         onClick={() => handleGenerateFixtures(t._id)}
                       >
                         Generate Fixtures
+                      </button>
+
+                      <button 
+                        className="btn btn-primary"
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }}
+                        onClick={() => navigate(`/tournaments/${t._id}`)}
+                      >
+                        View Details
                       </button>
                     </div>
                   </td>

@@ -11,6 +11,7 @@ import PlayerProfileForm from './pages/PlayerProfileForm';
 import PlayerProfileView from './pages/PlayerProfileView';
 import SquadManager from './pages/SquadManager';
 import SpectatorDashboard from './pages/SpectatorDashboard';
+import TournamentDetails from './pages/TournamentDetails';
 
 function RootRedirect() {
   const { user, loading, isAuthenticated } = useAuth();
@@ -105,6 +106,16 @@ function App() {
             element={
               <ProtectedRoute roles={['spectator']}>
                 <SpectatorDashboard />
+              </ProtectedRoute>
+            }
+          />
+
+          {/* Shared Protected Routes */}
+          <Route
+            path="/tournaments/:tournamentId"
+            element={
+              <ProtectedRoute roles={['admin', 'player', 'spectator']}>
+                <TournamentDetails />
               </ProtectedRoute>
             }
           />

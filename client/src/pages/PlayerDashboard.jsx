@@ -152,6 +152,14 @@ function PlayerDashboard() {
             <div className="cta-card-icon">🏆</div>
             <h2 className="cta-card-title">Tournament {upcomingTournament.name} {upcomingTournament.year} is Upcoming!</h2>
             
+            <button
+              className="btn btn-secondary"
+              style={{ width: 'auto', marginBottom: '1rem', marginTop: '1rem' }}
+              onClick={() => navigate(`/tournaments/${upcomingTournament._id}`)}
+            >
+              View Tournament Hub
+            </button>
+            
             {!currentRequestForUpcoming && (
               <>
                 <p className="cta-card-description">
