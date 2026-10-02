@@ -222,7 +222,7 @@ function TournamentDetails() {
                 </div>
 
                 {/* Status / Score */}
-                <div style={{ flex: '0 0 120px', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
+                <div style={{ flex: '0 0 auto', minWidth: '150px', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                   {match.status === 'completed' ? (
                     <div style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--color-primary-light)' }}>
                       {match.team1Goals} - {match.team2Goals}
@@ -232,11 +232,24 @@ function TournamentDetails() {
                   )}
 
                   {user?.role === 'admin' && (
-                    <div style={{ display: 'flex', gap: '0.25rem', marginTop: '0.5rem' }}>
-                      <button className="btn btn-secondary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => handleOpenSchedule(match)}>
+                    <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem', flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ 
+                          padding: '0.25rem 0.5rem', 
+                          fontSize: '0.75rem',
+                          background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(37, 99, 235, 0.4) 100%)',
+                          borderColor: 'rgba(59, 130, 246, 0.5)'
+                        }} 
+                        onClick={() => handleOpenSchedule(match)}
+                      >
                         Schedule
                       </button>
-                      <button className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} onClick={() => handleOpenResult(match)}>
+                      <button 
+                        className="btn btn-primary" 
+                        style={{ padding: '0.25rem 0.5rem', fontSize: '0.75rem' }} 
+                        onClick={() => handleOpenResult(match)}
+                      >
                         Result
                       </button>
                     </div>
