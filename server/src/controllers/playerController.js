@@ -183,9 +183,24 @@ const getMyProfile = async (req, res, next) => {
       });
     }
 
+    let activeTeam = null;
+    const activeTournament = await Tournament.findOne({ status: { $in: ['upcoming', 'ongoing'] } }).sort({ year: -1 });
+    
+    if (activeTournament) {
+      const membership = await TeamMembership.findOne({
+        playerId: player._id,
+        tournamentId: activeTournament._id,
+      }).populate('teamId');
+      
+      if (membership && membership.teamId) {
+        activeTeam = membership.teamId;
+      }
+    }
+
     res.status(200).json({
       success: true,
       player,
+      activeTeam
     });
   } catch (error) {
     next(error);

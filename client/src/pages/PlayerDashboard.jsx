@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import api from '../services/api';
 
 function PlayerDashboard() {
-  const { user, logout, playerProfile, hasProfile } = useAuth();
+  const { user, logout, playerProfile, activeTeam, hasProfile } = useAuth();
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [tournaments, setTournaments] = useState([]);
@@ -16,6 +16,9 @@ function PlayerDashboard() {
   const [isJoiningTeam, setIsJoiningTeam] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [teamErrorMsg, setTeamErrorMsg] = useState('');
+  
+  const [showCaptainModal, setShowCaptainModal] = useState(false);
+  const [achievementsText, setAchievementsText] = useState('');
 
   useEffect(() => {
     if (hasProfile) {
@@ -80,8 +83,10 @@ function PlayerDashboard() {
     setErrorMsg('');
     setIsSubmitting(true);
     try {
-      await api.post('/captain-requests', { tournamentId: tId });
+      await api.post('/captain-requests', { tournamentId: tId, achievements: achievementsText });
       await fetchRequests();
+      setShowCaptainModal(false);
+      setAchievementsText('');
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Failed to submit request');
     } finally {
@@ -158,11 +163,11 @@ function PlayerDashboard() {
                   style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
                   onClick={() => {
                     setSelectedTournament(upcomingTournament._id);
-                    handleRequestCaptain(upcomingTournament._id);
+                    setShowCaptainModal(true);
                   }}
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? 'Submitting...' : `Request to be Captain for ${playerProfile?.departmentName}`}
+                  Request to be Captain for {playerProfile?.departmentName}
                 </button>
               </>
             )}
@@ -255,8 +260,17 @@ function PlayerDashboard() {
               </div>
               <div className="info-item">
                 <div className="info-item-label">Team Status</div>
-                <div className="info-item-value" style={{ color: playerProfile.teamId ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
-                  {playerProfile.teamId ? 'Assigned' : 'Not assigned'}
+                <div className="info-item-value" style={{ color: activeTeam ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                  {activeTeam ? (
+                    <>
+                      {activeTeam.name}
+                      {(playerProfile.isCaptain || activeTeam.captainId === playerProfile._id) && (
+                        <span style={{ marginLeft: 'var(--spacing-xs)', color: 'var(--color-warning)' }} title="Captain">👑</span>
+                      )}
+                    </>
+                  ) : (
+                    'Not assigned'
+                  )}
                 </div>
               </div>
             </div>
@@ -280,7 +294,7 @@ function PlayerDashboard() {
         )}
 
         {/* ── Join Team Section ── */}
-        {hasProfile && !playerProfile.teamId && (
+        {hasProfile && !activeTeam && (
           <div className="welcome-card" style={{ animation: 'fadeSlideUp 0.6s ease-out', marginTop: 'var(--spacing-xl)' }}>
             <div className="welcome-card-header">
               <div className="welcome-greeting">
@@ -395,6 +409,35 @@ function PlayerDashboard() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+        {/* Captain Request Modal */}
+        {showCaptainModal && (
+          <div className="modal-overlay" onClick={() => !isSubmitting && setShowCaptainModal(false)}>
+            <div className="modal-content glass-card" onClick={e => e.stopPropagation()}>
+              <h2>Request Captaincy</h2>
+              <p style={{ color: 'var(--color-text-muted)', marginBottom: 'var(--spacing-md)' }}>
+                Let the admins know why you should be the captain for <strong>{playerProfile?.departmentName}</strong>.
+              </p>
+              {errorMsg && <div className="form-alert error" style={{ marginBottom: '1rem' }}>{errorMsg}</div>}
+              <div style={{ marginBottom: '1rem' }}>
+                <label className="form-label">Football Achievements / Message (Optional)</label>
+                <textarea 
+                  className="form-input" 
+                  rows="4" 
+                  placeholder="E.g., Played in the university team for 2 years, lead the defense last tournament..."
+                  value={achievementsText}
+                  onChange={(e) => setAchievementsText(e.target.value)}
+                  maxLength={1000}
+                ></textarea>
+              </div>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+                <button className="btn btn-ghost" onClick={() => setShowCaptainModal(false)} disabled={isSubmitting}>Cancel</button>
+                <button className="btn btn-primary" onClick={() => handleRequestCaptain()} disabled={isSubmitting}>
+                  {isSubmitting ? 'Submitting...' : 'Submit Request'}
+                </button>
+              </div>
+            </div>
           </div>
         )}
       </main>

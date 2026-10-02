@@ -3,7 +3,7 @@ import { useAuth } from '../context/AuthContext';
 
 function PlayerProfileView() {
   const navigate = useNavigate();
-  const { user, playerProfile, logout } = useAuth();
+  const { user, playerProfile, activeTeam, logout } = useAuth();
 
   const handleLogout = async () => {
     await logout();
@@ -131,12 +131,21 @@ function PlayerProfileView() {
             </div>
           </div>
 
-          {/* Team Status (reserved for future) */}
+          {/* Team Status */}
           <div className="profile-team-status">
             <div className="info-item" style={{ textAlign: 'center' }}>
               <div className="info-item-label">Team Status</div>
-              <div className="info-item-value" style={{ color: 'var(--color-text-muted)' }}>
-                ⏳ Not assigned to a team yet
+              <div className="info-item-value" style={{ color: activeTeam ? 'var(--color-primary)' : 'var(--color-text-muted)' }}>
+                {activeTeam ? (
+                  <>
+                    ✅ Assigned to: <strong>{activeTeam.name}</strong>
+                    {(playerProfile.isCaptain || activeTeam.captainId === playerProfile._id) && (
+                      <span style={{ marginLeft: 'var(--spacing-xs)', color: 'var(--color-warning)' }} title="Captain">👑 (Captain)</span>
+                    )}
+                  </>
+                ) : (
+                  '⏳ Not assigned to a team yet'
+                )}
               </div>
             </div>
           </div>

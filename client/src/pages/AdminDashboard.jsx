@@ -1,6 +1,6 @@
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Fragment } from 'react';
 import api from '../services/api';
 import AdminTournamentManager from '../components/AdminTournamentManager';
 
@@ -202,27 +202,39 @@ function AdminDashboard() {
                     </tr>
                   ) : (
                     captainRequests.map((req) => (
-                      <tr key={req._id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '0.75rem' }}>
-                          <div>{req.playerId?.name}</div>
-                          <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{req.playerId?.admissionNumber}</div>
-                        </td>
-                        <td style={{ padding: '0.75rem' }}>{req.playerId?.departmentName}</td>
-                        <td style={{ padding: '0.75rem' }}>{req.tournamentId?.name}</td>
-                        <td style={{ padding: '0.75rem' }}>
-                           <span className={`status-badge ${req.status}`}>
-                            {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
-                          </span>
-                        </td>
-                        <td style={{ padding: '0.75rem' }}>
-                          {req.status === 'pending' && (
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <button className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleApproveRequest(req._id)}>Approve</button>
-                              <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleRejectRequest(req._id)}>Reject</button>
-                            </div>
-                          )}
-                        </td>
-                      </tr>
+                      <Fragment key={req._id}>
+                        <tr style={{ borderBottom: req.achievements ? 'none' : '1px solid rgba(255,255,255,0.05)' }}>
+                          <td style={{ padding: '0.75rem' }}>
+                            <div>{req.playerId?.name}</div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>{req.playerId?.admissionNumber}</div>
+                          </td>
+                          <td style={{ padding: '0.75rem' }}>{req.playerId?.departmentName}</td>
+                          <td style={{ padding: '0.75rem' }}>{req.tournamentId?.name}</td>
+                          <td style={{ padding: '0.75rem' }}>
+                             <span className={`status-badge ${req.status}`}>
+                              {req.status.charAt(0).toUpperCase() + req.status.slice(1)}
+                            </span>
+                          </td>
+                          <td style={{ padding: '0.75rem' }}>
+                            {req.status === 'pending' && (
+                              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                                <button className="btn btn-primary" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleApproveRequest(req._id)}>Approve</button>
+                                <button className="btn btn-danger" style={{ padding: '0.25rem 0.5rem', fontSize: '0.875rem' }} onClick={() => handleRejectRequest(req._id)}>Reject</button>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                        {req.achievements && (
+                          <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td colSpan="5" style={{ padding: '0 0.75rem 0.75rem', color: 'var(--color-text-secondary)', fontSize: '0.875rem' }}>
+                              <div style={{ background: 'rgba(255,255,255,0.03)', padding: '0.75rem', borderRadius: 'var(--radius-sm)', maxHeight: '100px', overflowY: 'auto' }}>
+                                <strong>Achievements/Message: </strong>
+                                {req.achievements}
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
                     ))
                   )}
                 </tbody>

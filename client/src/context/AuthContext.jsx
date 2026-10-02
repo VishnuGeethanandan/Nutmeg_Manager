@@ -6,6 +6,7 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [playerProfile, setPlayerProfile] = useState(null);
+  const [activeTeam, setActiveTeam] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Fetch current user on mount (restores session from cookie)
@@ -28,9 +29,11 @@ export function AuthProvider({ children }) {
     try {
       const res = await api.get('/players/me');
       setPlayerProfile(res.data.player);
+      setActiveTeam(res.data.activeTeam || null);
       return res.data.player;
     } catch {
       setPlayerProfile(null);
+      setActiveTeam(null);
       return null;
     }
   }, []);
@@ -87,6 +90,8 @@ export function AuthProvider({ children }) {
     playerProfile,
     setPlayerProfile,
     fetchPlayerProfile,
+    activeTeam,
+    setActiveTeam,
     hasProfile: !!playerProfile,
   };
 

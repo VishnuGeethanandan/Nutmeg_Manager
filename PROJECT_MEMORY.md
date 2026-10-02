@@ -457,8 +457,8 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] Single source of truth file (`PROJECT_MEMORY.md`) initialized
 - [x] **Module 1 Completed:** Authentication & User Management (Database + Backend API + JWT HttpOnly Cookies + Role Middleware + Seed Script + React Auth Context + Login/Register UI + Role Dashboards + E2E Auth Test Suite)
 - [x] **Module 2 Completed:** Player Profile (DB + Backend API + Photo Upload + Unique Index Validation + React Profile Form/View + Dashboard Context + E2E Profile Test Suite)
-- [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI)
-- [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite)
+- [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI + Captain Achievements Enhancement)
+- [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite + Active Team Display logic)
 - [x] **Module 5 (Partial):** Tournament Creation (Admin UI, dynamic team generation, Backend CRUD) & Tournament-Aware Captain Requests (Module 3/5 Integration)
 
 ---

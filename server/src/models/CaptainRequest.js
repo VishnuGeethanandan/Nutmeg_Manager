@@ -17,6 +17,12 @@ const captainRequestSchema = new mongoose.Schema(
       ref: 'Team',
       required: true,
     },
+    achievements: {
+      type: String,
+      trim: true,
+      maxlength: 1000,
+      default: '',
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

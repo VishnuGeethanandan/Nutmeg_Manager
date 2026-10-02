@@ -8,7 +8,7 @@ const Team = require('../models/Team');
 // @access  Private (Player only)
 const createCaptainRequest = async (req, res, next) => {
   try {
-    const { tournamentId } = req.body;
+    const { tournamentId, achievements } = req.body;
 
     // Validate tournament
     const tournament = await Tournament.findById(tournamentId);
@@ -47,6 +47,7 @@ const createCaptainRequest = async (req, res, next) => {
       playerId: player._id,
       tournamentId,
       teamId: team._id,
+      achievements: achievements ? achievements.trim() : '',
       status: 'pending',
     });
 
