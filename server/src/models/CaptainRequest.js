@@ -12,6 +12,11 @@ const captainRequestSchema = new mongoose.Schema(
       ref: 'Tournament',
       required: true,
     },
+    teamId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Team',
+      required: true,
+    },
     status: {
       type: String,
       enum: ['pending', 'approved', 'rejected'],

@@ -43,6 +43,31 @@ const getActiveTournament = async (req, res, next) => {
   }
 };
 
+// @desc    Get upcoming tournament
+// @route   GET /api/tournaments/upcoming
+// @access  Private
+const getUpcomingTournament = async (req, res, next) => {
+  try {
+    const tournament = await Tournament.findOne({
+      status: 'upcoming',
+    }).select('name year _id');
+
+    if (!tournament) {
+      return res.status(200).json({
+        success: true,
+        data: null,
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: tournament,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get single tournament
 // @route   GET /api/tournaments/:id
 // @access  Public
@@ -192,6 +217,7 @@ const resetPlayersActiveState = async (req, res, next) => {
 module.exports = {
   getTournaments,
   getActiveTournament,
+  getUpcomingTournament,
   getTournamentById,
   createTournament,
   updateTournament,

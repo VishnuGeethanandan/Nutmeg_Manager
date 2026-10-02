@@ -1,6 +1,7 @@
 const CaptainRequest = require('../models/CaptainRequest');
 const Player = require('../models/Player');
 const Tournament = require('../models/Tournament');
+const Team = require('../models/Team');
 
 // @desc    Create a captain request
 // @route   POST /api/captain-requests
@@ -11,14 +12,20 @@ const createCaptainRequest = async (req, res, next) => {
 
     // Validate tournament
     const tournament = await Tournament.findById(tournamentId);
-    if (!tournament) {
-      return res.status(404).json({ success: false, message: 'Tournament not found.' });
+    if (!tournament || tournament.status !== 'upcoming') {
+      return res.status(400).json({ success: false, message: 'Upcoming tournament not found or invalid.' });
     }
 
     // Get the player profile for the authenticated user
     const player = await Player.findOne({ userId: req.user._id });
     if (!player) {
       return res.status(404).json({ success: false, message: 'Player profile not found.' });
+    }
+
+    // Identify the team for this tournament matching the player's department
+    const team = await Team.findOne({ tournamentId, name: player.departmentName });
+    if (!team) {
+      return res.status(404).json({ success: false, message: `Team for department ${player.departmentName} not found in this tournament.` });
     }
 
     // Check if player already has a pending or approved request for this tournament
@@ -39,6 +46,7 @@ const createCaptainRequest = async (req, res, next) => {
     const captainRequest = await CaptainRequest.create({
       playerId: player._id,
       tournamentId,
+      teamId: team._id,
       status: 'pending',
     });
 

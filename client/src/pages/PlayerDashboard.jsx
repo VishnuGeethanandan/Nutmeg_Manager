@@ -8,6 +8,7 @@ function PlayerDashboard() {
   const navigate = useNavigate();
   const [requests, setRequests] = useState([]);
   const [tournaments, setTournaments] = useState([]);
+  const [upcomingTournament, setUpcomingTournament] = useState(null);
   const [selectedTournament, setSelectedTournament] = useState('');
   const [teams, setTeams] = useState([]);
   const [selectedTeam, setSelectedTeam] = useState('');
@@ -20,8 +21,20 @@ function PlayerDashboard() {
     if (hasProfile) {
       fetchRequests();
       fetchTournaments();
+      fetchUpcomingTournament();
     }
   }, [hasProfile]);
+
+  const fetchUpcomingTournament = async () => {
+    try {
+      const res = await api.get('/tournaments/upcoming');
+      if (res.data && res.data.data) {
+        setUpcomingTournament(res.data.data);
+      }
+    } catch (err) {
+      console.error('Failed to fetch upcoming tournament', err);
+    }
+  };
 
   useEffect(() => {
     if (selectedTournament) {
@@ -61,12 +74,13 @@ function PlayerDashboard() {
     }
   };
 
-  const handleRequestCaptain = async () => {
-    if (!selectedTournament) return;
+  const handleRequestCaptain = async (tournamentIdParam = null) => {
+    const tId = tournamentIdParam || selectedTournament;
+    if (!tId) return;
     setErrorMsg('');
     setIsSubmitting(true);
     try {
-      await api.post('/captain-requests', { tournamentId: selectedTournament });
+      await api.post('/captain-requests', { tournamentId: tId });
       await fetchRequests();
     } catch (err) {
       setErrorMsg(err.response?.data?.message || 'Failed to submit request');
@@ -105,6 +119,10 @@ function PlayerDashboard() {
     Forward: '⚡',
   };
 
+  const currentRequestForUpcoming = upcomingTournament 
+    ? requests.find(req => req.tournamentId?._id === upcomingTournament._id || req.tournamentId === upcomingTournament._id)
+    : null;
+
   return (
     <div className="dashboard-layout">
       {/* Header */}
@@ -123,6 +141,61 @@ function PlayerDashboard() {
 
       {/* Content */}
       <main className="dashboard-content">
+        
+        {hasProfile && upcomingTournament && (
+          <div className="cta-card glass-card" style={{ animation: 'fadeSlideUp 0.5s ease-out', marginBottom: 'var(--spacing-xl)', borderColor: 'var(--color-primary-light)' }}>
+            <div className="cta-card-icon">🏆</div>
+            <h2 className="cta-card-title">Tournament {upcomingTournament.name} {upcomingTournament.year} is Upcoming!</h2>
+            
+            {!currentRequestForUpcoming && (
+              <>
+                <p className="cta-card-description">
+                  Represent your department! You can request to be the team captain for the upcoming tournament.
+                </p>
+                {errorMsg && <div className="form-alert error" style={{ marginBottom: '1rem' }}>{errorMsg}</div>}
+                <button
+                  className="btn btn-primary"
+                  style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
+                  onClick={() => {
+                    setSelectedTournament(upcomingTournament._id);
+                    handleRequestCaptain(upcomingTournament._id);
+                  }}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? 'Submitting...' : `Request to be Captain for ${playerProfile?.departmentName}`}
+                </button>
+              </>
+            )}
+
+            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'pending' && (
+              <p className="cta-card-description" style={{ color: 'var(--color-warning)' }}>
+                ⏳ Captaincy Request Pending for {upcomingTournament.year}
+              </p>
+            )}
+
+            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'approved' && (
+              <>
+                <p className="cta-card-description" style={{ color: 'var(--color-success)' }}>
+                  ✅ You are the approved Captain for {upcomingTournament.year}!
+                </p>
+                <button
+                  className="btn btn-primary"
+                  style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
+                  onClick={() => navigate('/player/squad')}
+                >
+                  Manage Squad
+                </button>
+              </>
+            )}
+            
+            {currentRequestForUpcoming && currentRequestForUpcoming.status === 'rejected' && (
+              <p className="cta-card-description" style={{ color: 'var(--color-error)' }}>
+                ❌ Your captaincy request for {upcomingTournament.year} was rejected.
+              </p>
+            )}
+          </div>
+        )}
+
         {!hasProfile ? (
           /* ── Profile Not Created CTA ── */
           <div className="cta-card glass-card" style={{ animation: 'fadeSlideUp 0.5s ease-out' }}>

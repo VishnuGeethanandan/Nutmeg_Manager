@@ -2,6 +2,7 @@ const express = require('express');
 const {
   getTournaments,
   getActiveTournament,
+  getUpcomingTournament,
   getTournamentById,
   createTournament,
   updateTournament,
@@ -14,6 +15,7 @@ const router = express.Router();
 
 router.get('/', protect, getTournaments);
 router.get('/active', protect, getActiveTournament);
+router.get('/upcoming', protect, getUpcomingTournament);
 router.get('/:id', protect, getTournamentById);
 
 // Admin routes
