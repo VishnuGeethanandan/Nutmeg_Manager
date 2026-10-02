@@ -13,6 +13,20 @@ function TournamentDetails() {
     fetchDetails();
   }, [tournamentId]);
 
+  const interleavedMatches = useMemo(() => {
+    const matches = details?.matches;
+    if (!matches || matches.length === 0) return [];
+    const matchesA = matches.filter(m => m.group === 'A');
+    const matchesB = matches.filter(m => m.group === 'B');
+    const interleaved = [];
+    const maxLength = Math.max(matchesA.length, matchesB.length);
+    for (let i = 0; i < maxLength; i++) {
+      if (i < matchesA.length) interleaved.push(matchesA[i]);
+      if (i < matchesB.length) interleaved.push(matchesB[i]);
+    }
+    return interleaved;
+  }, [details]);
+
   const fetchDetails = async () => {
     try {
       const res = await api.get(`/tournaments/${tournamentId}/details`);
@@ -42,20 +56,7 @@ function TournamentDetails() {
     );
   }
 
-  const { tournament, groupA, groupB, matches } = details;
-
-  const interleavedMatches = useMemo(() => {
-    if (!matches || matches.length === 0) return [];
-    const matchesA = matches.filter(m => m.group === 'A');
-    const matchesB = matches.filter(m => m.group === 'B');
-    const interleaved = [];
-    const maxLength = Math.max(matchesA.length, matchesB.length);
-    for (let i = 0; i < maxLength; i++) {
-      if (i < matchesA.length) interleaved.push(matchesA[i]);
-      if (i < matchesB.length) interleaved.push(matchesB[i]);
-    }
-    return interleaved;
-  }, [matches]);
+  const { tournament, groupA, groupB } = details;
 
   return (
     <div className="layout-container" style={{ padding: '2rem' }}>
