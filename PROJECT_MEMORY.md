@@ -461,14 +461,15 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 3 Completed:** Team & Captain Management (DB + Backend API + Team Request Workflow + Admin Review UI + Captain Achievements Enhancement)
 - [x] **Module 4 Completed:** Player Selection (DB + Backend API + Direct Selection Enforcement + React Squad Manager UI + E2E Selection Test Suite + Active Team Display logic)
 - [x] **Module 5 Completed:** Tournament Management (Admin UI, dynamic team generation, Backend CRUD, Group Allocation API, Automated Round-Robin Fixture Generation) & Tournament-Aware Captain Requests (Module 3/5 Integration)
+- [x] **Module 6 & 7 Completed:** Random Group Draw & Fixture Generation (Backend Group Allocation algorithm, Backend Round-Robin Fixture generator, Frontend Shared Tournament Hub UI)
 
 ---
 
 ## 9. Current Module
 
-* **Module Name:** **Module 8 — Match Management**
+* **Module Name:** **Module 9 — Standings & Qualification**
 * **Current Status:** Not started.
-* **Next Action:** Build Admin UI to set match dates/times and log match events (goals, cards, extra time).
+* **Next Action:** Build backend logic to calculate Group A and Group B points tables based on completed match results.
 
 ---
 
@@ -481,7 +482,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 5:** Tournament Management (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 8:** Match Management (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 8:** Match Management (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 9:** Standings & Qualification (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 10:** Player Statistics & Tournament History (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 11:** Announcements (DB + Backend + Frontend + Integration + Testing)
