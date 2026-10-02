@@ -521,15 +521,23 @@ const generateFinal = async (req, res, next) => {
 
     for (const match of semiMatches) {
       // Determine winner
-      // A tie should have been resolved (e.g. by penalties represented in goals or via some manual adjust).
-      // Here we assume higher total goals (including penalties if they adjusted them) is the winner.
-      // If it's a strict tie for some reason, we'll pick team1 as a fallback or return error.
       if (match.team1Goals > match.team2Goals) {
         winners.push(match.team1);
       } else if (match.team2Goals > match.team1Goals) {
         winners.push(match.team2);
       } else {
-        return res.status(400).json({ success: false, message: `Match ${match._id} is a tie. Adjust the score to reflect the penalty shootout winner.` });
+        // Tie, check penalties
+        if (match.team1Penalties !== null && match.team2Penalties !== null) {
+          if (match.team1Penalties > match.team2Penalties) {
+            winners.push(match.team1);
+          } else if (match.team2Penalties > match.team1Penalties) {
+            winners.push(match.team2);
+          } else {
+            return res.status(400).json({ success: false, message: `Match ${match._id} has tied penalties. Update the penalty score to determine a winner.` });
+          }
+        } else {
+          return res.status(400).json({ success: false, message: `Match ${match._id} is a tie. Please enter penalty shootout scores to determine a winner.` });
+        }
       }
     }
 

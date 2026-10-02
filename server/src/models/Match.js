@@ -47,6 +47,14 @@ const matchSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    team1Penalties: {
+      type: Number,
+      default: null,
+    },
+    team2Penalties: {
+      type: Number,
+      default: null,
+    },
   },
   { timestamps: true }
 );

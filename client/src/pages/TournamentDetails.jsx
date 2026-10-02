@@ -25,6 +25,8 @@ function TournamentDetails() {
   const [team2Goals, setTeam2Goals] = useState(0);
   const [team1Cards, setTeam1Cards] = useState(0);
   const [team2Cards, setTeam2Cards] = useState(0);
+  const [team1Penalties, setTeam1Penalties] = useState('');
+  const [team2Penalties, setTeam2Penalties] = useState('');
   const [matchStatus, setMatchStatus] = useState('scheduled');
 
   useEffect(() => {
@@ -87,6 +89,8 @@ function TournamentDetails() {
     setTeam2Goals(match.team2Goals || 0);
     setTeam1Cards(match.team1Cards || 0);
     setTeam2Cards(match.team2Cards || 0);
+    setTeam1Penalties(match.team1Penalties !== null && match.team1Penalties !== undefined ? match.team1Penalties : '');
+    setTeam2Penalties(match.team2Penalties !== null && match.team2Penalties !== undefined ? match.team2Penalties : '');
     setMatchStatus(match.status || 'scheduled');
     setResultModalOpen(true);
   };
@@ -110,12 +114,20 @@ function TournamentDetails() {
     if (!selectedMatch) return;
     setIsSubmitting(true);
     try {
-      await api.put(`/matches/${selectedMatch._id}`, {
+      const payload = {
         team1Goals: Number(team1Goals),
         team2Goals: Number(team2Goals),
         team1Cards: Number(team1Cards),
+        team2Cards: Number(team2Cards),
         status: matchStatus,
-      });
+      };
+
+      if ((selectedMatch.group === 'Semi-Final' || selectedMatch.group === 'Final') && Number(team1Goals) === Number(team2Goals)) {
+        payload.team1Penalties = team1Penalties === '' ? null : Number(team1Penalties);
+        payload.team2Penalties = team2Penalties === '' ? null : Number(team2Penalties);
+      }
+
+      await api.put(`/matches/${selectedMatch._id}`, payload);
       setResultModalOpen(false);
       fetchDetails();
     } catch (err) {
@@ -419,8 +431,15 @@ function TournamentDetails() {
                 {/* Status / Score */}
                 <div style={{ flex: '0 0 auto', minWidth: '150px', textAlign: 'right', display: 'flex', flexDirection: 'column', gap: '0.5rem', alignItems: 'flex-end' }}>
                   {match.status === 'completed' ? (
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--color-primary-light)' }}>
-                      {match.team1Goals} - {match.team2Goals}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+                      <div style={{ fontSize: '1.5rem', fontWeight: 'bold', letterSpacing: '2px', color: 'var(--color-primary-light)' }}>
+                        {match.team1Goals} - {match.team2Goals}
+                      </div>
+                      {(match.team1Penalties !== null && match.team1Penalties !== undefined) && (
+                        <div style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)', marginTop: '-0.25rem' }}>
+                          ({match.team1Penalties}) pens ({match.team2Penalties})
+                        </div>
+                      )}
                     </div>
                   ) : (
                     <span className="status-badge scheduled">Scheduled</span>
@@ -522,6 +541,20 @@ function TournamentDetails() {
                 </div>
               </div>
             </div>
+
+            {/* Penalties (Conditional) */}
+            {(selectedMatch.group === 'Semi-Final' || selectedMatch.group === 'Final') && Number(team1Goals) === Number(team2Goals) && (
+              <div style={{ display: 'flex', gap: '2rem', marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)' }}>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', color: 'var(--color-primary-light)' }}>{selectedMatch.team1?.name} Pens</label>
+                  <input type="number" min="0" className="form-input" style={{ textAlign: 'center' }} value={team1Penalties} onChange={(e) => setTeam1Penalties(e.target.value)} placeholder="0" />
+                </div>
+                <div style={{ flex: 1, textAlign: 'center' }}>
+                  <label className="form-label" style={{ fontSize: '0.75rem', color: 'var(--color-primary-light)' }}>{selectedMatch.team2?.name} Pens</label>
+                  <input type="number" min="0" className="form-input" style={{ textAlign: 'center' }} value={team2Penalties} onChange={(e) => setTeam2Penalties(e.target.value)} placeholder="0" />
+                </div>
+              </div>
+            )}
 
             <div style={{ marginBottom: '1.5rem' }}>
               <label className="form-label">Match Status</label>

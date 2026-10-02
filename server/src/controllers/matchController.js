@@ -12,7 +12,7 @@ const updateMatch = async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'Match not found' });
     }
 
-    const { matchDate, status, team1Goals, team2Goals, team1Cards, team2Cards } = req.body;
+    const { matchDate, status, team1Goals, team2Goals, team1Cards, team2Cards, team1Penalties, team2Penalties } = req.body;
 
     if (matchDate !== undefined) match.matchDate = matchDate;
     if (status !== undefined) match.status = status;
@@ -20,6 +20,8 @@ const updateMatch = async (req, res, next) => {
     if (team2Goals !== undefined) match.team2Goals = team2Goals;
     if (team1Cards !== undefined) match.team1Cards = team1Cards;
     if (team2Cards !== undefined) match.team2Cards = team2Cards;
+    if (team1Penalties !== undefined) match.team1Penalties = team1Penalties;
+    if (team2Penalties !== undefined) match.team2Penalties = team2Penalties;
 
     await match.save();
 
