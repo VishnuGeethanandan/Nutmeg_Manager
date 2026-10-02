@@ -7,6 +7,7 @@ function TournamentDetails() {
   const { tournamentId } = useParams();
   const navigate = useNavigate();
   const [details, setDetails] = useState(null);
+  const [standings, setStandings] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   
@@ -46,8 +47,12 @@ function TournamentDetails() {
 
   const fetchDetails = async () => {
     try {
-      const res = await api.get(`/tournaments/${tournamentId}/details`);
-      setDetails(res.data.data);
+      const [resDetails, resStandings] = await Promise.all([
+        api.get(`/tournaments/${tournamentId}/details`),
+        api.get(`/tournaments/${tournamentId}/standings`)
+      ]);
+      setDetails(resDetails.data.data);
+      setStandings(resStandings.data.data);
     } catch (err) {
       console.error(err);
       setError(err.response?.data?.message || 'Failed to load tournament details');
@@ -103,7 +108,6 @@ function TournamentDetails() {
         team1Goals: Number(team1Goals),
         team2Goals: Number(team2Goals),
         team1Cards: Number(team1Cards),
-        team2Cards: Number(team2Cards),
         status: matchStatus,
       });
       setResultModalOpen(false);
@@ -154,41 +158,93 @@ function TournamentDetails() {
         </div>
       </div>
 
-      {/* Group Allocations */}
+      {/* Group Standings */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', marginBottom: '2rem' }}>
-        {/* Group A */}
-        <div className="glass-card" style={{ flex: '1 1 300px', animation: 'fadeSlideUp 0.6s ease-out' }}>
+        {/* Group A Standings */}
+        <div className="glass-card" style={{ flex: '1 1 500px', animation: 'fadeSlideUp 0.6s ease-out', padding: '1.5rem' }}>
           <h2 style={{ textAlign: 'center', color: 'var(--color-primary-light)', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-            Group A
+            Group A Standings
           </h2>
-          {groupA && groupA.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {groupA.map((team, index) => (
-                <li key={team._id} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.03)', marginBottom: '0.5rem', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ color: 'var(--color-text-muted)', fontWeight: 'bold' }}>{index + 1}</span>
-                  <span style={{ fontSize: '1.1rem' }}>{team.name}</span>
-                </li>
-              ))}
-            </ul>
+          {standings?.groupA && standings.groupA.length > 0 ? (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <th style={{ padding: '0.5rem', textAlign: 'left' }}>Team</th>
+                    <th style={{ padding: '0.5rem' }}>P</th>
+                    <th style={{ padding: '0.5rem' }}>W</th>
+                    <th style={{ padding: '0.5rem' }}>D</th>
+                    <th style={{ padding: '0.5rem' }}>L</th>
+                    <th style={{ padding: '0.5rem' }}>GF</th>
+                    <th style={{ padding: '0.5rem' }}>GA</th>
+                    <th style={{ padding: '0.5rem' }}>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings.groupA.map((team, index) => (
+                    <tr key={team._id} style={{ 
+                      background: index < 2 ? 'rgba(30, 215, 96, 0.05)' : 'rgba(255,255,255,0.02)', 
+                      borderLeft: index < 2 ? '3px solid var(--color-primary-light)' : '3px solid transparent',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <td style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 'bold' }}>{team.name}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.played}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.won}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.drawn}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.lost}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalsFor}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalsAgainst}</td>
+                      <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>{team.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1rem' }}>Group A not allocated yet.</p>
           )}
         </div>
 
-        {/* Group B */}
-        <div className="glass-card" style={{ flex: '1 1 300px', animation: 'fadeSlideUp 0.7s ease-out' }}>
+        {/* Group B Standings */}
+        <div className="glass-card" style={{ flex: '1 1 500px', animation: 'fadeSlideUp 0.7s ease-out', padding: '1.5rem' }}>
           <h2 style={{ textAlign: 'center', color: 'var(--color-primary-light)', marginBottom: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '0.5rem' }}>
-            Group B
+            Group B Standings
           </h2>
-          {groupB && groupB.length > 0 ? (
-            <ul style={{ listStyle: 'none', padding: 0 }}>
-              {groupB.map((team, index) => (
-                <li key={team._id} style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.03)', marginBottom: '0.5rem', borderRadius: 'var(--radius-sm)', display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <span style={{ color: 'var(--color-text-muted)', fontWeight: 'bold' }}>{index + 1}</span>
-                  <span style={{ fontSize: '1.1rem' }}>{team.name}</span>
-                </li>
-              ))}
-            </ul>
+          {standings?.groupB && standings.groupB.length > 0 ? (
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'center' }}>
+                <thead>
+                  <tr style={{ color: 'var(--color-text-muted)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
+                    <th style={{ padding: '0.5rem', textAlign: 'left' }}>Team</th>
+                    <th style={{ padding: '0.5rem' }}>P</th>
+                    <th style={{ padding: '0.5rem' }}>W</th>
+                    <th style={{ padding: '0.5rem' }}>D</th>
+                    <th style={{ padding: '0.5rem' }}>L</th>
+                    <th style={{ padding: '0.5rem' }}>GF</th>
+                    <th style={{ padding: '0.5rem' }}>GA</th>
+                    <th style={{ padding: '0.5rem' }}>Pts</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {standings.groupB.map((team, index) => (
+                    <tr key={team._id} style={{ 
+                      background: index < 2 ? 'rgba(30, 215, 96, 0.05)' : 'rgba(255,255,255,0.02)', 
+                      borderLeft: index < 2 ? '3px solid var(--color-primary-light)' : '3px solid transparent',
+                      borderBottom: '1px solid rgba(255,255,255,0.05)'
+                    }}>
+                      <td style={{ padding: '0.75rem', textAlign: 'left', fontWeight: 'bold' }}>{team.name}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.played}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.won}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.drawn}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.lost}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalsFor}</td>
+                      <td style={{ padding: '0.75rem' }}>{team.goalsAgainst}</td>
+                      <td style={{ padding: '0.75rem', fontWeight: 'bold', color: 'var(--color-primary-light)' }}>{team.points}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           ) : (
             <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1rem' }}>Group B not allocated yet.</p>
           )}

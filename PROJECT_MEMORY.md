@@ -467,9 +467,9 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 
 ## 9. Current Module
 
-* **Module Name:** **Module 9 — Standings & Qualification**
+* **Module Name:** **Module 10 — Player Statistics & Tournament History**
 * **Current Status:** Not started.
-* **Next Action:** Build backend logic to calculate Group A and Group B points tables based on completed match results.
+* **Next Action:** Build backend aggregation endpoints to calculate individual player stats (goals, assists, cards) and render them on dashboards.
 
 ---
 
@@ -483,7 +483,7 @@ Development MUST follow a strict **VERTICAL SLICE (MODULE-BY-MODULE)** approach.
 - [x] **Module 6:** Random Group Draw (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 7:** Fixture Generation (DB + Backend + Frontend + Integration + Testing)
 - [x] **Module 8:** Match Management (DB + Backend + Frontend + Integration + Testing)
-- [ ] **Module 9:** Standings & Qualification (DB + Backend + Frontend + Integration + Testing)
+- [x] **Module 9:** Standings & Qualification (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 10:** Player Statistics & Tournament History (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 11:** Announcements (DB + Backend + Frontend + Integration + Testing)
 - [ ] **Module 12:** AI Match Prediction (Data + ML Model + API + Frontend + Testing)

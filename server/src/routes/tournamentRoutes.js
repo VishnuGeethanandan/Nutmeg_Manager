@@ -11,6 +11,7 @@ const {
   allocateGroups,
   generateFixtures,
   getTournamentDetails,
+  getTournamentStandings,
 } = require('../controllers/tournamentController');
 const { protect, authorize } = require('../middleware/auth');
 
@@ -21,6 +22,7 @@ router.get('/active', protect, getActiveTournament);
 router.get('/upcoming', protect, getUpcomingTournament);
 router.get('/:id', protect, getTournamentById);
 router.get('/:id/details', protect, getTournamentDetails);
+router.get('/:id/standings', protect, getTournamentStandings);
 
 // Admin routes
 router.use(protect, authorize('admin'));
