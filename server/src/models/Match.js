@@ -55,6 +55,13 @@ const matchSchema = new mongoose.Schema(
       type: Number,
       default: null,
     },
+    playerStats: [{
+      playerId: { type: mongoose.Schema.Types.ObjectId, ref: 'Player' },
+      goals: { type: Number, default: 0 },
+      assists: { type: Number, default: 0 },
+      yellowCards: { type: Number, default: 0 },
+      redCards: { type: Number, default: 0 }
+    }],
   },
   { timestamps: true }
 );
