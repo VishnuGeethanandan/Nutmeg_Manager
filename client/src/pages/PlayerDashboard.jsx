@@ -170,7 +170,7 @@ function PlayerDashboard() {
                   className="btn btn-primary"
                   style={{ width: 'auto', marginTop: 'var(--spacing-md)' }}
                   onClick={() => {
-                    setSelectedTournament(upcomingTournament._id);
+                    setSelectedTournament(activeTournament._id);
                     setShowCaptainModal(true);
                   }}
                   disabled={isSubmitting}

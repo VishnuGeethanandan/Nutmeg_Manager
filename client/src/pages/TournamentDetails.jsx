@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import api from '../services/api';
+import LeaderboardView from '../components/LeaderboardView';
 
 function TournamentDetails() {
   const { tournamentId } = useParams();
@@ -28,6 +29,12 @@ function TournamentDetails() {
   const [team1Penalties, setTeam1Penalties] = useState('');
   const [team2Penalties, setTeam2Penalties] = useState('');
   const [matchStatus, setMatchStatus] = useState('scheduled');
+
+  // Stats updates
+  const [teamRosters, setTeamRosters] = useState([]);
+  const [playerStatsUpdates, setPlayerStatsUpdates] = useState([]);
+  const [statInput, setStatInput] = useState({ playerId: '', type: 'goals', count: 1 });
+
 
   useEffect(() => {
     fetchDetails();
@@ -83,7 +90,7 @@ function TournamentDetails() {
     setScheduleModalOpen(true);
   };
 
-  const handleOpenResult = (match) => {
+  const handleOpenResult = async (match) => {
     setSelectedMatch(match);
     setTeam1Goals(match.team1Goals || 0);
     setTeam2Goals(match.team2Goals || 0);
@@ -92,8 +99,40 @@ function TournamentDetails() {
     setTeam1Penalties(match.team1Penalties !== null && match.team1Penalties !== undefined ? match.team1Penalties : '');
     setTeam2Penalties(match.team2Penalties !== null && match.team2Penalties !== undefined ? match.team2Penalties : '');
     setMatchStatus(match.status || 'scheduled');
+    setPlayerStatsUpdates([]);
+    setTeamRosters([]);
     setResultModalOpen(true);
+
+    // Fetch rosters for both teams
+    try {
+      if (match.team1?._id && match.team2?._id) {
+        const [res1, res2] = await Promise.all([
+          api.get(`/teams/${match.team1._id}`),
+          api.get(`/teams/${match.team2._id}`)
+        ]);
+        const r1 = (res1.data.roster || []).map(p => ({ ...p, teamName: match.team1.name, teamId: match.team1._id }));
+        const r2 = (res2.data.roster || []).map(p => ({ ...p, teamName: match.team2.name, teamId: match.team2._id }));
+        const allRosters = [...r1, ...r2];
+        setTeamRosters(allRosters);
+
+        if (match.playerStats && match.playerStats.length > 0) {
+          const prefilled = [];
+          for (const stat of match.playerStats) {
+            const player = allRosters.find(p => p._id === stat.playerId);
+            if (!player) continue;
+            if (stat.goals > 0) prefilled.push({ playerId: stat.playerId, type: 'goals', count: stat.goals, playerName: player.name, teamName: player.teamName });
+            if (stat.assists > 0) prefilled.push({ playerId: stat.playerId, type: 'assists', count: stat.assists, playerName: player.name, teamName: player.teamName });
+            if (stat.yellowCards > 0) prefilled.push({ playerId: stat.playerId, type: 'yellowCards', count: stat.yellowCards, playerName: player.name, teamName: player.teamName });
+            if (stat.redCards > 0) prefilled.push({ playerId: stat.playerId, type: 'redCards', count: stat.redCards, playerName: player.name, teamName: player.teamName });
+          }
+          setPlayerStatsUpdates(prefilled);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load rosters', err);
+    }
   };
+
 
   const handleUpdateSchedule = async () => {
     if (!selectedMatch) return;
@@ -120,6 +159,11 @@ function TournamentDetails() {
         team1Cards: Number(team1Cards),
         team2Cards: Number(team2Cards),
         status: matchStatus,
+        playerStatsUpdates: playerStatsUpdates.map(s => {
+           const update = { playerId: s.playerId, matchesPlayed: 1 };
+           update[s.type] = s.count;
+           return update;
+        })
       };
 
       if ((selectedMatch.group === 'Semi-Final' || selectedMatch.group === 'Final') && Number(team1Goals) === Number(team2Goals)) {
@@ -137,6 +181,20 @@ function TournamentDetails() {
       setIsSubmitting(false);
     }
   };
+
+  const handleAddStat = () => {
+    if (!statInput.playerId) return;
+    const player = teamRosters.find(p => p._id === statInput.playerId);
+    if (player) {
+      setPlayerStatsUpdates(prev => [...prev, { ...statInput, playerName: player.name, teamName: player.teamName }]);
+      setStatInput({ playerId: '', type: 'goals', count: 1 });
+    }
+  };
+
+  const handleRemoveStat = (index) => {
+    setPlayerStatsUpdates(prev => prev.filter((_, i) => i !== index));
+  };
+
 
   const handleGenerateSemis = async () => {
     if (!window.confirm('Are you sure you want to generate semi-finals? Ensure all group matches are completed.')) return;
@@ -315,6 +373,11 @@ function TournamentDetails() {
             <p style={{ textAlign: 'center', color: 'var(--color-text-muted)', padding: '1rem' }}>Group B not allocated yet.</p>
           )}
         </div>
+      </div>
+
+      {/* Leaderboard Section */}
+      <div style={{ marginBottom: '2rem' }}>
+        <LeaderboardView tournamentId={tournamentId} />
       </div>
 
       {/* Fixtures Schedule */}
@@ -556,6 +619,56 @@ function TournamentDetails() {
               </div>
             )}
 
+            {/* Player Stats Input */}
+            <div style={{ marginBottom: '1.5rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: 'var(--radius-md)', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '1rem', color: 'var(--color-primary-light)' }}>Record Player Stats</h3>
+              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+                <select 
+                  className="form-input" 
+                  style={{ flex: '1 1 200px' }} 
+                  value={statInput.playerId} 
+                  onChange={(e) => setStatInput({...statInput, playerId: e.target.value})}
+                >
+                  <option value="">Select Player...</option>
+                  {teamRosters.map(p => (
+                    <option key={p._id} value={p._id}>{p.name} ({p.teamName})</option>
+                  ))}
+                </select>
+                <select 
+                  className="form-input" 
+                  style={{ flex: '0 0 100px' }}
+                  value={statInput.type}
+                  onChange={(e) => setStatInput({...statInput, type: e.target.value})}
+                >
+                  <option value="goals">Goal</option>
+                  <option value="assists">Assist</option>
+                  <option value="yellowCards">Yellow</option>
+                  <option value="redCards">Red</option>
+                </select>
+                <input 
+                  type="number" 
+                  className="form-input" 
+                  style={{ width: '60px' }} 
+                  value={statInput.count} 
+                  onChange={(e) => setStatInput({...statInput, count: Number(e.target.value)})}
+                />
+                <button className="btn btn-secondary" onClick={handleAddStat}>Add</button>
+              </div>
+
+              {playerStatsUpdates.length > 0 && (
+                <div style={{ marginTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {playerStatsUpdates.map((stat, idx) => (
+                    <div key={idx} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(0,0,0,0.2)', padding: '0.5rem 0.75rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}>
+                      <div>
+                        <strong>{stat.playerName}</strong> <span style={{ color: 'var(--color-text-muted)' }}>({stat.teamName})</span>: +{stat.count} {stat.type}
+                      </div>
+                      <button className="btn btn-ghost" style={{ padding: '0.2rem 0.5rem', fontSize: '0.75rem' }} onClick={() => handleRemoveStat(idx)}>X</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
             <div style={{ marginBottom: '1.5rem' }}>
               <label className="form-label">Match Status</label>
               <select className="form-input" value={matchStatus} onChange={(e) => setMatchStatus(e.target.value)}>
@@ -563,6 +676,7 @@ function TournamentDetails() {
                 <option value="completed">Completed</option>
               </select>
             </div>
+
 
             <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
               <button className="btn btn-ghost" onClick={() => setResultModalOpen(false)} disabled={isSubmitting}>Cancel</button>
