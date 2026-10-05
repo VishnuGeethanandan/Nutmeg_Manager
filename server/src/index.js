@@ -13,6 +13,7 @@ const captainRequestRoutes = require('./routes/captainRequestRoutes');
 const teamRoutes = require('./routes/teamRoutes');
 const squadRoutes = require('./routes/squadRoutes');
 const matchRoutes = require('./routes/matchRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 // Load environment variables
 dotenv.config();
@@ -46,6 +47,7 @@ app.use('/api/captain-requests', captainRequestRoutes);
 app.use('/api/teams', teamRoutes);
 app.use('/api/squad', squadRoutes);
 app.use('/api/matches', matchRoutes);
+app.use('/api/stats', statsRoutes);
 
 // --- Global Error Handler (must be after routes) ---
 app.use(errorHandler);
@@ -61,4 +63,4 @@ const startServer = async () => {
   });
 };
 
-startServer();
+startServer(); // Triggering server restart
